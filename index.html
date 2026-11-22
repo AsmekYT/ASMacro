@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ASMacro</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <div id="targetToast" class="hidden" data-i18n="picker.waitingHotkey">Waiting... Press [Ctrl + Shift + X]</div>
+    <div id="screenshotOverlay" class="hidden"><canvas id="screenshotCanvas"></canvas></div>
+
+    <div id="keyboardModal" class="modal-overlay hidden">
+      <div class="modal-content" style="max-width: 850px;">
+        <div class="modal-body"></div>
+      </div>
+    </div>
+
+    <div id="mouseModal" class="modal-overlay hidden">
+      <div class="modal-content">
+        <div class="modal-body"></div>
+      </div>
+    </div>
+
+    <div id="app">
+      <header id="topHeader">
+        <div class="logo-area"><img src="/src/assets/asmacro-icon.svg" alt="ASMacro" /> ASMacro</div>
+        <div class="tabs-area">
+          <div id="macroTabs" class="macro-tabs"></div>
+          <button id="addMacroBtn" class="tab" data-i18n-title="html.createMacro">＋</button>
+        </div>
+        <div class="controls-area">
+          <button id="runBtn" data-i18n="state.run">Run</button>
+          <button id="stopBtn" data-i18n="html.stop">Stop</button>
+        </div>
+      </header>
+
+      <div id="macroOptionsBar" class="macro-options"></div>
+
+      <main>
+        <aside class="left-sidebar" id="leftSidebar">
+          <button class="menu-btn active" id="editorTabBtn" data-i18n-title="panel.editor">
+            <i data-icon="editor"></i>
+          </button>
+          <button class="menu-btn" id="variablesTabBtn" data-i18n-title="panel.variables">
+            <i data-icon="variables"></i>
+          </button>
+          <button class="menu-btn" id="autoclickerTabBtn" data-i18n-title="panel.autoclicker">
+            <i data-icon="autoclicker"></i>
+          </button>
+          <button class="menu-btn" id="settingsTabBtn" data-i18n-title="panel.settings">
+            <i data-icon="settings"></i>
+          </button>
+        </aside>
+
+        <div id="blocklyWrapper">
+          <div id="blocklyDiv"></div>
+          <div id="macroState" class="status-indicator stopped">
+            <span class="dot"></span><span id="stateText" data-i18n="state.stopped">Stopped</span>
+          </div>
+        </div>
+
+        <aside class="right-sidebar hidden" id="rightSidebar" data-mode="dock">
+          <div class="panel-resizer" id="panelResizer"></div>
+          <div class="right-sidebar-content">
+            <div class="right-sidebar-header">
+              <h3 data-i18n="panel.properties">Properties</h3>
+              <button id="closePropertiesBtn" class="close-btn" data-i18n-title="html.closePanel">×</button>
+            </div>
+            <div id="propertiesContent"></div>
+          </div>
+        </aside>
+      </main>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

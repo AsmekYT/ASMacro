@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' setup:; img-src 'self' setup: data:; style-src 'self' 'unsafe-inline' setup:; script-src 'self' setup:;">
+<title>ASMacro Setup</title>
+<link rel="stylesheet" href="setup.css">
+</head>
+<body>
+<div id="titlebar">
+  <img id="titlebarIcon" src="logo.png" alt="">
+  <span id="titlebarText">ASMacro</span>
+  <div id="titlebarButtons">
+    <button id="btnMinimize" class="tb-btn" tabindex="-1" aria-label="Minimize">&#x2013;</button>
+    <button id="btnClose" class="tb-btn tb-close" tabindex="-1" aria-label="Close">&#x2715;</button>
+  </div>
+</div>
+
+<div id="shell">
+  <aside id="sidebar">
+    <div class="brand">
+      <img class="brand-mark" src="logo.png" alt="">
+      <div class="brand-name">ASMacro</div>
+    </div>
+    <ol id="steps"></ol>
+    <div class="sidebar-foot" id="versionLabel"></div>
+  </aside>
+
+  <main id="content">
+    <section class="page" data-page="lang">
+      <h1 data-i18n="lang.title"></h1>
+      <p class="sub" data-i18n="lang.sub"></p>
+      <div class="cards" id="langCards">
+        <button class="card" data-lang="auto"><span class="card-title" data-i18n="lang.auto"></span><span class="card-sub" data-i18n="lang.autoSub"></span></button>
+        <button class="card" data-lang="en"><span class="card-title">English</span><span class="card-sub">English</span></button>
+        <button class="card" data-lang="pl"><span class="card-title">Polski</span><span class="card-sub">Polish</span></button>
+      </div>
+    </section>
+
+    <section class="page" data-page="license">
+      <h1 data-i18n="license.title"></h1>
+      <p class="sub" data-i18n="license.sub"></p>
+      <pre id="licenseText"></pre>
+      <label class="check"><input type="checkbox" id="licenseAccept"><span data-i18n="license.accept"></span></label>
+    </section>
+
+    <section class="page" data-page="scope">
+      <h1 data-i18n="scope.title"></h1>
+      <p class="sub" data-i18n="scope.sub"></p>
+      <div class="cards vertical" id="scopeCards">
+        <button class="card" data-scope="user">
+          <span class="card-title" data-i18n="scope.user.title"></span>
+          <span class="card-sub" data-i18n="scope.user.sub"></span>
+          <span class="card-path" id="scopePathUser"></span>
+        </button>
+        <button class="card" data-scope="machine">
+          <span class="card-title"><span class="shield" aria-hidden="true"></span><span data-i18n="scope.machine.title"></span></span>
+          <span class="card-sub" data-i18n="scope.machine.sub"></span>
+          <span class="card-path" id="scopePathMachine"></span>
+        </button>
+      </div>
+      <p class="note" id="scopeError" hidden></p>
+    </section>
+
+    <section class="page" data-page="options">
+      <h1 data-i18n="options.title"></h1>
+      <p class="sub" data-i18n="options.sub"></p>
+      <div class="field">
+        <label data-i18n="options.location"></label>
+        <div class="path-row">
+          <input type="text" id="dirInput" spellcheck="false">
+          <button id="btnBrowse" class="btn-secondary" data-i18n="options.browse"></button>
+        </div>
+        <p class="note" id="dirNote"></p>
+      </div>
+      <div class="field">
+        <label data-i18n="options.components"></label>
+        <label class="check"><input type="checkbox" id="optDesktop"><span data-i18n="options.desktop"></span></label>
+        <label class="check"><input type="checkbox" id="optStartMenu"><span data-i18n="options.startmenu"></span></label>
+        <label class="check"><input type="checkbox" id="optAssoc"><span data-i18n="options.assoc"></span></label>
+        <label class="check"><input type="checkbox" id="optAutostart"><span data-i18n="options.autostart"></span></label>
+      </div>
+    </section>
+
+    <section class="page" data-page="confirm">
+      <h1 data-i18n="confirm.title"></h1>
+      <p class="sub" id="confirmSub"></p>
+      <label class="check"><input type="checkbox" id="optPurge"><span data-i18n="confirm.purge"></span></label>
+      <p class="note" data-i18n="confirm.purgeNote"></p>
+    </section>
+
+    <section class="page" data-page="upgrade">
+      <h1 data-i18n="upgrade.title"></h1>
+      <p class="sub" id="upgradeSummary"></p>
+      <dl class="kv" id="upgradeDetails"></dl>
+      <button id="btnChangeSettings" class="link-btn" data-i18n="upgrade.change"></button>
+    </section>
+
+    <section class="page" data-page="installed">
+      <h1 id="installedTitle"></h1>
+      <p class="sub" data-i18n="installed.sub"></p>
+    </section>
+
+    <section class="page" data-page="progress">
+      <h1 id="progressTitle" data-i18n="progress.title"></h1>
+      <p class="sub" id="progressStep"></p>
+      <div class="bar"><div class="bar-fill" id="progressFill"></div></div>
+      <button id="btnToggleLog" class="link-btn" data-i18n="progress.showLog"></button>
+      <pre id="logView" hidden></pre>
+    </section>
+
+    <section class="page" data-page="done">
+      <div class="done-mark">&#x2713;</div>
+      <h1 id="doneTitle"></h1>
+      <p class="sub" id="doneSub"></p>
+      <label class="check" id="optLaunchRow"><input type="checkbox" id="optLaunch" checked><span data-i18n="done.launch"></span></label>
+    </section>
+
+    <section class="page" data-page="error">
+      <div class="error-mark">!</div>
+      <h1 id="errorTitle" data-i18n="error.title"></h1>
+      <p class="sub" id="errorMessage"></p>
+      <pre id="errorDetail"></pre>
+      <button id="btnCopyDetails" class="btn-secondary" data-i18n="error.copy"></button>
+    </section>
+  </main>
+</div>
+
+<footer id="actionbar">
+  <button id="btnBack" class="btn-secondary" data-i18n="nav.back"></button>
+  <div class="spacer"></div>
+  <button id="btnCancel" class="btn-secondary" data-i18n="nav.cancel"></button>
+  <button id="btnNext" class="btn-primary" data-i18n="nav.next"></button>
+</footer>
+
+<script src="setup.js"></script>
+</body>
+</html>
