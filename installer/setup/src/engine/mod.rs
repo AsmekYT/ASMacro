@@ -1,0 +1,12 @@
+pub mod deelevate;
+pub mod detect;
+pub mod elevate;
+pub mod folders;
+pub mod fsutil;
+pub mod install;
+pub mod payload;
+pub mod process;
+pub mod registry;
+pub mod shortcuts;
+pub mod uninstall;
+pub mod webview2;
