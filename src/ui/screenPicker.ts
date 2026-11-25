@@ -44,7 +44,7 @@ export async function openScreenPicker(opts: PickerOpts) {
   try {
     let res: any = await invoke<any>('take_screenshot', { screenIndex: primaryScreenIndex() });
     const win = getCurrentWindow();
-    await win.show(); await new Promise(r => setTimeout(r, 100)); await win.setFullscreen(true); await win.setAlwaysOnTop(true); await win.setFocus();
+    await win.unminimize(); await win.show(); await new Promise(r => setTimeout(r, 100)); await win.setFullscreen(true); await win.setAlwaysOnTop(true); await win.setFocus();
 
     screenshotOverlay?.classList.remove('hidden');
 
