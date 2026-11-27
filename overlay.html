@@ -4,8 +4,20 @@
     <meta charset="UTF-8" />
     <title>ASMacro click markers</title>
     <style>
-      html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: transparent; overflow: hidden; }
-      #markers { position: relative; width: 100%; height: 100%; }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        background: transparent;
+        overflow: hidden;
+      }
+      #markers {
+        position: relative;
+        width: 100%;
+        height: 100%;
+      }
       .marker {
         position: absolute;
         width: 26px;
@@ -16,7 +28,9 @@
         background: rgba(0, 194, 255, 0.18);
         box-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
         color: #fff;
-        font: 600 12px/22px system-ui, sans-serif;
+        font:
+          600 12px/22px system-ui,
+          sans-serif;
         text-align: center;
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
       }
@@ -25,7 +39,10 @@
         background: rgba(255, 59, 48, 0.32);
         transform: scale(1.25);
       }
-      .marker.single { border-color: #ffd400; background: rgba(255, 212, 0, 0.22); }
+      .marker.single {
+        border-color: #ffd400;
+        background: rgba(255, 212, 0, 0.22);
+      }
       .marker::after {
         content: '';
         position: absolute;

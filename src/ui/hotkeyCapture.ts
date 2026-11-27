@@ -6,7 +6,10 @@ export function bindHotkeyButton(
   set: (combo: string) => void,
   onDone: () => Promise<void>,
 ) {
-  const btn = typeof target === 'string' ? (document.getElementById(target) as HTMLButtonElement | null) : target;
+  const btn =
+    typeof target === 'string'
+      ? (document.getElementById(target) as HTMLButtonElement | null)
+      : target;
   if (!btn) return;
   btn.addEventListener('click', () => {
     btn.innerText = t('hotkey.pressKeys');
@@ -16,12 +19,19 @@ export function bindHotkeyButton(
       window.removeEventListener('blur', cancel);
     };
     const handleKeyDown = async (e: KeyboardEvent) => {
-      e.preventDefault(); e.stopPropagation();
-      if (e.key === 'Escape') { cancel(); return; }
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.key === 'Escape') {
+        cancel();
+        return;
+      }
       if (['Control', 'Alt', 'Shift', 'Meta'].includes(e.key)) return;
 
       const activeMods: string[] = [];
-      if (e.ctrlKey) activeMods.push('Ctrl'); if (e.altKey) activeMods.push('Alt'); if (e.shiftKey) activeMods.push('Shift'); if (e.metaKey) activeMods.push('Win');
+      if (e.ctrlKey) activeMods.push('Ctrl');
+      if (e.altKey) activeMods.push('Alt');
+      if (e.shiftKey) activeMods.push('Shift');
+      if (e.metaKey) activeMods.push('Win');
 
       const key = e.key === ' ' ? 'Space' : e.key.length === 1 ? e.key.toUpperCase() : e.key;
       const combo = activeMods.length > 0 ? `${activeMods.join('+')}+${key}` : key;

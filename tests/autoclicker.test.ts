@@ -72,39 +72,75 @@ describe('toBackendConfig', () => {
   });
 
   it('zero limits mean none', () => {
-    expect(backend({ limitClicks: 0, limitSeconds: 0 })).toMatchObject({ limit_clicks: null, limit_ms: null });
+    expect(backend({ limitClicks: 0, limitSeconds: 0 })).toMatchObject({
+      limit_clicks: null,
+      limit_ms: null,
+    });
     expect(backend({ limitClicks: 500 }).limit_clicks).toBe(500);
   });
 
   it('position modes', () => {
-    const points = [{ x: 10, y: 20 }, { x: 30, y: 40 }];
+    const points = [
+      { x: 10, y: 20 },
+      { x: 30, y: 40 },
+    ];
     expect(backend({ positionMode: 'cursor' }).position).toBe(null);
-    expect(backend({ positionMode: 'fixed', posX: 100, posY: 200, points })).toMatchObject({ position: [100, 200], points: null });
-    expect(backend({ positionMode: 'sequence', points }).points).toEqual([[10, 20], [30, 40]]);
-    expect(backend({ positionMode: 'sequence', points: [] })).toMatchObject({ points: null, position: null });
+    expect(backend({ positionMode: 'fixed', posX: 100, posY: 200, points })).toMatchObject({
+      position: [100, 200],
+      points: null,
+    });
+    expect(backend({ positionMode: 'sequence', points }).points).toEqual([
+      [10, 20],
+      [30, 40],
+    ]);
+    expect(backend({ positionMode: 'sequence', points: [] })).toMatchObject({
+      points: null,
+      position: null,
+    });
   });
 
   it('sequence options', () => {
-    const b = backend({ positionMode: 'sequence', points: [{ x: 1, y: 2 }], sequenceLoop: false, sequenceRandom: true, clicksPerPoint: 0 });
+    const b = backend({
+      positionMode: 'sequence',
+      points: [{ x: 1, y: 2 }],
+      sequenceLoop: false,
+      sequenceRandom: true,
+      clicksPerPoint: 0,
+    });
     expect(b).toMatchObject({ sequence_loop: false, sequence_random: true, clicks_per_point: 1 });
   });
 
   it('edge stop', () => {
     expect(backend().edge_stop).toBe(null);
-    expect(backend({ edgeStop: true, edgeMarginPx: 8, edgeCornersOnly: true }).edge_stop).toEqual({ margin_px: 8, corners_only: true });
+    expect(backend({ edgeStop: true, edgeMarginPx: 8, edgeCornersOnly: true }).edge_stop).toEqual({
+      margin_px: 8,
+      corners_only: true,
+    });
   });
 
   it('targets', () => {
-    expect(backend({ targetKind: 'mouse', button: 'RIGHT' }).target).toEqual({ kind: 'mouse', button: 'RIGHT' });
-    expect(backend({ targetKind: 'key', key: 'A', caseSensitive: true }).target).toEqual({ kind: 'key', key: 'A', case_sensitive: true });
+    expect(backend({ targetKind: 'mouse', button: 'RIGHT' }).target).toEqual({
+      kind: 'mouse',
+      button: 'RIGHT',
+    });
+    expect(backend({ targetKind: 'key', key: 'A', caseSensitive: true }).target).toEqual({
+      kind: 'key',
+      key: 'A',
+      case_sensitive: true,
+    });
   });
 });
 
 it('toHotkeyCombo', () => {
   expect(toHotkeyCombo(defaultAutoclickerConfig.hotkey)).toBe(null);
   const mods = { ctrl: true, alt: false, shift: false, win: false };
-  expect(toHotkeyCombo({ ...mods, trigger: { kind: 'key', vk: 0x74, label: 'F5' } })).toEqual({ ...mods, trigger: { kind: 'key', vk: 0x74 } });
-  expect(toHotkeyCombo({ ...mods, trigger: { kind: 'mouse', button: 'x1', label: 'Mouse4' } })).toEqual({ ...mods, trigger: { kind: 'mouse', button: 'x1' } });
+  expect(toHotkeyCombo({ ...mods, trigger: { kind: 'key', vk: 0x74, label: 'F5' } })).toEqual({
+    ...mods,
+    trigger: { kind: 'key', vk: 0x74 },
+  });
+  expect(
+    toHotkeyCombo({ ...mods, trigger: { kind: 'mouse', button: 'x1', label: 'Mouse4' } }),
+  ).toEqual({ ...mods, trigger: { kind: 'mouse', button: 'x1' } });
 });
 
 describe('applyAutoclickerConfig', () => {
@@ -140,7 +176,13 @@ describe('applyAutoclickerConfig', () => {
       pickMulti: true,
       mapScreen: '1',
       rate: 12,
-      hotkey: { ctrl: true, alt: false, shift: false, win: false, trigger: { kind: 'key', vk: 0x74, label: 'F5' } },
+      hotkey: {
+        ctrl: true,
+        alt: false,
+        shift: false,
+        win: false,
+        trigger: { kind: 'key', vk: 0x74, label: 'F5' },
+      },
     } as const;
     applyAutoclickerConfig(cfg(state as any));
     const saved = JSON.parse(JSON.stringify(cloneAutoclickerConfig()));

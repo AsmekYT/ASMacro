@@ -12,7 +12,14 @@ it('errorMessage', () => {
 it('describeError on Error', () => {
   const err = Object.assign(new Error('outer'), { cause: new Error('inner'), status: 404 });
   const out = describeError(err, 'While loading');
-  for (const part of ['While loading', 'name: Error', 'message: outer', 'stack:', 'inner', 'status: 404']) {
+  for (const part of [
+    'While loading',
+    'name: Error',
+    'message: outer',
+    'stack:',
+    'inner',
+    'status: 404',
+  ]) {
     expect(out).toContain(part);
   }
 });

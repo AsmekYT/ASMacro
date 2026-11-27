@@ -7,11 +7,21 @@ import { encodeMacroFile, decodeMacroFile } from '../macroFile';
 import { reportError } from '../ui/toast';
 import { shrinkAssets } from '../templateImage';
 
-export function genId() { return 'macro-' + Date.now().toString(36) + '-' + Math.floor(Math.random()*1000); }
+export function genId() {
+  return 'macro-' + Date.now().toString(36) + '-' + Math.floor(Math.random() * 1000);
+}
 
 export async function saveMacroToFile(macro: MacroDoc) {
   try {
-    const bytes = encodeMacroFile({ name: macro.name, blocks: macro.blocks, xml: macro.xml, variables: macro.variables, assets: macro.assets, activation: macro.activation, autoclicker: macro.autoclicker });
+    const bytes = encodeMacroFile({
+      name: macro.name,
+      blocks: macro.blocks,
+      xml: macro.xml,
+      variables: macro.variables,
+      assets: macro.assets,
+      activation: macro.activation,
+      autoclicker: macro.autoclicker,
+    });
     const targetPath = await saveDialog({
       title: t('macro.export.title'),
       defaultPath: (macro.name || 'macro') + '.asmacro',
@@ -19,13 +29,18 @@ export async function saveMacroToFile(macro: MacroDoc) {
     });
     if (!targetPath) return;
     await invoke('write_binary_file', { path: targetPath, data: Array.from(bytes) });
-  } catch (e) { reportError(e, t('macro.export.failed')); }
+  } catch (e) {
+    reportError(e, t('macro.export.failed'));
+  }
 }
 
 export async function readMacroFromPath(path: string): Promise<MacroDoc | null> {
   const bytes = new Uint8Array(await invoke<number[]>('read_binary_file', { path }));
   const parsed = decodeMacroFile(bytes);
-  if (!parsed) { reportError(t('macro.import.invalid'), t('macro.import.invalidTitle')); return null; }
+  if (!parsed) {
+    reportError(t('macro.import.invalid'), t('macro.import.invalidTitle'));
+    return null;
+  }
   await shrinkAssets(parsed.assets);
   const id = genId();
   const fileName = path.split(/[\\/]/).pop() || t('macro.defaultName');

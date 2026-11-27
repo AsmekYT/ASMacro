@@ -29,8 +29,14 @@ function toggleBlock(block: Blockly.BlockSvg) {
   }
 }
 
-function disposeGroup(workspace: Blockly.WorkspaceSvg, ids: Iterable<string>, group: string | boolean) {
-  try { Blockly.getFocusManager().focusNode(workspace); } catch (e) {}
+function disposeGroup(
+  workspace: Blockly.WorkspaceSvg,
+  ids: Iterable<string>,
+  group: string | boolean,
+) {
+  try {
+    Blockly.getFocusManager().focusNode(workspace);
+  } catch (e) {}
   const prev = Blockly.Events.getGroup();
   Blockly.Events.setGroup(group);
   try {
@@ -49,7 +55,10 @@ function deleteSelected(workspace: Blockly.WorkspaceSvg) {
   selectedIds.clear();
 }
 
-function blockFromEventTarget(workspace: Blockly.WorkspaceSvg, target: EventTarget | null): Blockly.BlockSvg | null {
+function blockFromEventTarget(
+  workspace: Blockly.WorkspaceSvg,
+  target: EventTarget | null,
+): Blockly.BlockSvg | null {
   const el = (target as Element | null)?.closest?.('.blocklyDraggable[data-id]');
   const id = el?.getAttribute('data-id');
   return id ? (workspace.getBlockById(id) as Blockly.BlockSvg | null) : null;
@@ -58,13 +67,18 @@ function blockFromEventTarget(workspace: Blockly.WorkspaceSvg, target: EventTarg
 export function initMultiselect(workspace: Blockly.WorkspaceSvg, injectionDiv: HTMLElement) {
   const marqueeEl = document.createElement('div');
   Object.assign(marqueeEl.style, {
-    position: 'fixed', display: 'none', pointerEvents: 'none', zIndex: '9999',
-    border: '1px dashed #007acc', backgroundColor: 'rgba(0, 122, 204, 0.12)',
+    position: 'fixed',
+    display: 'none',
+    pointerEvents: 'none',
+    zIndex: '9999',
+    border: '1px dashed #007acc',
+    backgroundColor: 'rgba(0, 122, 204, 0.12)',
   });
   document.body.appendChild(marqueeEl);
 
   let marqueeActive = false;
-  let startX = 0, startY = 0;
+  let startX = 0,
+    startY = 0;
 
   let dragBlockId: string | null = null;
   let dragStartPos: Map<string, Blockly.utils.Coordinate> | null = null;
@@ -77,60 +91,86 @@ export function initMultiselect(workspace: Blockly.WorkspaceSvg, injectionDiv: H
     return !el.closest?.('.blocklyToolboxDiv, .blocklyFlyout, .blocklyScrollbarHandle');
   };
 
-  injectionDiv.addEventListener('pointerdown', (e: PointerEvent) => {
-    if (!inWorkspaceArea(e.target)) return;
+  injectionDiv.addEventListener(
+    'pointerdown',
+    (e: PointerEvent) => {
+      if (!inWorkspaceArea(e.target)) return;
 
-    if ((e.ctrlKey || e.metaKey) && e.button === 0) {
-      const block = blockFromEventTarget(workspace, e.target);
-      if (block && !block.isShadow()) {
-        e.preventDefault(); e.stopPropagation();
-        toggleBlock(block);
+      if ((e.ctrlKey || e.metaKey) && e.button === 0) {
+        const block = blockFromEventTarget(workspace, e.target);
+        if (block && !block.isShadow()) {
+          e.preventDefault();
+          e.stopPropagation();
+          toggleBlock(block);
+          return;
+        }
+      }
+
+      if (e.shiftKey && e.button === 0) {
+        e.preventDefault();
+        e.stopPropagation();
+        marqueeActive = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        clearSelection(workspace);
+        Object.assign(marqueeEl.style, {
+          display: 'block',
+          left: `${startX}px`,
+          top: `${startY}px`,
+          width: '0px',
+          height: '0px',
+        });
         return;
       }
-    }
 
-    if (e.shiftKey && e.button === 0) {
-      e.preventDefault(); e.stopPropagation();
-      marqueeActive = true;
-      startX = e.clientX; startY = e.clientY;
-      clearSelection(workspace);
-      Object.assign(marqueeEl.style, { display: 'block', left: `${startX}px`, top: `${startY}px`, width: '0px', height: '0px' });
-      return;
-    }
+      const block = blockFromEventTarget(workspace, e.target);
+      if (block && selectedIds.has(block.id) && e.button === 0) {
+        dragBlockId = block.id;
+        dragStartPos = new Map();
+        dragStartPos.set(block.id, block.getRelativeToSurfaceXY());
+        forEachSelected(workspace, b => {
+          if (!b.getParent()) dragStartPos!.set(b.id, b.getRelativeToSurfaceXY());
+        });
+        return;
+      }
 
-    const block = blockFromEventTarget(workspace, e.target);
-    if (block && selectedIds.has(block.id) && e.button === 0) {
-      dragBlockId = block.id;
-      dragStartPos = new Map();
-      dragStartPos.set(block.id, block.getRelativeToSurfaceXY());
-      forEachSelected(workspace, b => {
-        if (!b.getParent()) dragStartPos!.set(b.id, b.getRelativeToSurfaceXY());
-      });
-      return;
-    }
-
-    if (selectedIds.size > 0) clearSelection(workspace);
-  }, true);
+      if (selectedIds.size > 0) clearSelection(workspace);
+    },
+    true,
+  );
 
   window.addEventListener('pointermove', (e: PointerEvent) => {
     if (!marqueeActive) return;
     Object.assign(marqueeEl.style, {
-      left: `${Math.min(startX, e.clientX)}px`, top: `${Math.min(startY, e.clientY)}px`,
-      width: `${Math.abs(e.clientX - startX)}px`, height: `${Math.abs(e.clientY - startY)}px`,
+      left: `${Math.min(startX, e.clientX)}px`,
+      top: `${Math.min(startY, e.clientY)}px`,
+      width: `${Math.abs(e.clientX - startX)}px`,
+      height: `${Math.abs(e.clientY - startY)}px`,
     });
   });
 
   window.addEventListener('pointerup', (e: PointerEvent) => {
-    setTimeout(() => { dragBlockId = null; dragStartPos = null; }, 100);
+    setTimeout(() => {
+      dragBlockId = null;
+      dragStartPos = null;
+    }, 100);
 
     if (!marqueeActive) return;
     marqueeActive = false;
     marqueeEl.style.display = 'none';
 
-    const a = Blockly.utils.svgMath.screenToWsCoordinates(workspace, new Blockly.utils.Coordinate(startX, startY));
-    const b = Blockly.utils.svgMath.screenToWsCoordinates(workspace, new Blockly.utils.Coordinate(e.clientX, e.clientY));
-    const left = Math.min(a.x, b.x), right = Math.max(a.x, b.x);
-    const top = Math.min(a.y, b.y), bottom = Math.max(a.y, b.y);
+    const a = Blockly.utils.svgMath.screenToWsCoordinates(
+      workspace,
+      new Blockly.utils.Coordinate(startX, startY),
+    );
+    const b = Blockly.utils.svgMath.screenToWsCoordinates(
+      workspace,
+      new Blockly.utils.Coordinate(e.clientX, e.clientY),
+    );
+    const left = Math.min(a.x, b.x),
+      right = Math.max(a.x, b.x);
+    const top = Math.min(a.y, b.y),
+      bottom = Math.max(a.y, b.y);
 
     workspace.getAllBlocks(false).forEach(block => {
       const svgBlock = block as Blockly.BlockSvg;
@@ -142,30 +182,46 @@ export function initMultiselect(workspace: Blockly.WorkspaceSvg, injectionDiv: H
     });
   });
 
-  document.addEventListener('keydown', (e: KeyboardEvent) => {
-    const tag = (e.target as HTMLElement | null)?.tagName;
-    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+  document.addEventListener(
+    'keydown',
+    (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement | null)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
 
-    if (e.key === 'Escape' && selectedIds.size > 0) {
-      clearSelection(workspace);
-      return;
-    }
-    if (e.key === 'Delete' || e.key === 'Backspace') {
-      if (selectedIds.size > 0) {
-        e.preventDefault(); e.stopPropagation();
-        deleteSelected(workspace);
+      if (e.key === 'Escape' && selectedIds.size > 0) {
+        clearSelection(workspace);
         return;
       }
-      const sel = Blockly.common.getSelected();
-      if (sel instanceof Blockly.BlockSvg && sel.workspace === workspace && sel.isDeletable() && !sel.isShadow()) {
-        e.preventDefault(); e.stopPropagation();
-        disposeGroup(workspace, [sel.id], true);
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (selectedIds.size > 0) {
+          e.preventDefault();
+          e.stopPropagation();
+          deleteSelected(workspace);
+          return;
+        }
+        const sel = Blockly.common.getSelected();
+        if (
+          sel instanceof Blockly.BlockSvg &&
+          sel.workspace === workspace &&
+          sel.isDeletable() &&
+          !sel.isShadow()
+        ) {
+          e.preventDefault();
+          e.stopPropagation();
+          disposeGroup(workspace, [sel.id], true);
+        }
       }
-    }
-  }, true);
+    },
+    true,
+  );
 
   workspace.addChangeListener((event: Blockly.Events.Abstract) => {
-    if (event.type === Blockly.Events.BLOCK_MOVE && !applyingMultiMove && dragBlockId && dragStartPos) {
+    if (
+      event.type === Blockly.Events.BLOCK_MOVE &&
+      !applyingMultiMove &&
+      dragBlockId &&
+      dragStartPos
+    ) {
       const move = event as Blockly.Events.BlockMove;
       if (move.blockId === dragBlockId) {
         const dragged = workspace.getBlockById(dragBlockId) as Blockly.BlockSvg | null;
@@ -173,7 +229,8 @@ export function initMultiselect(workspace: Blockly.WorkspaceSvg, injectionDiv: H
         dragBlockId = null;
         if (dragged && start) {
           const now = dragged.getRelativeToSurfaceXY();
-          const dx = now.x - start.x, dy = now.y - start.y;
+          const dx = now.x - start.x,
+            dy = now.y - start.y;
           if (dx !== 0 || dy !== 0) {
             applyingMultiMove = true;
             const prev = Blockly.Events.getGroup();
@@ -196,7 +253,9 @@ export function initMultiselect(workspace: Blockly.WorkspaceSvg, injectionDiv: H
       const ids = del.ids ?? [];
       const wasSelected = ids.some(id => selectedIds.has(id));
       ids.forEach(id => selectedIds.delete(id));
-      try { Blockly.getFocusManager().focusNode(workspace); } catch (e) {}
+      try {
+        Blockly.getFocusManager().focusNode(workspace);
+      } catch (e) {}
       if (wasSelected && !cascading && selectedIds.size > 0) {
         cascading = true;
         try {

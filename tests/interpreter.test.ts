@@ -13,7 +13,11 @@ function fakeWorkspace(varList: { id: string; name: string }[] = []) {
 }
 
 function fakeMathNumber(value: number) {
-  return { type: 'math_number', data: null, getFieldValue: (n: string) => (n === 'NUM' ? value : undefined) } as unknown as Blockly.Block;
+  return {
+    type: 'math_number',
+    data: null,
+    getFieldValue: (n: string) => (n === 'NUM' ? value : undefined),
+  } as unknown as Blockly.Block;
 }
 
 const savedMaxLoopIterations = settings.maxLoopIterations;
@@ -51,7 +55,8 @@ describe('controls_repeat_ext', () => {
       type: 'controls_repeat_ext',
       data: null,
       id: 'r1',
-      getInputTargetBlock: (name: string) => (name === 'TIMES' ? timesBlock : name === 'DO' ? doBlock : null),
+      getInputTargetBlock: (name: string) =>
+        name === 'TIMES' ? timesBlock : name === 'DO' ? doBlock : null,
       getNextBlock: () => null,
     } as unknown as Blockly.Block;
 

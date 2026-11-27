@@ -36,13 +36,18 @@ export function checkForUpdate(silent: boolean): Promise<UpdateCheck> {
     try {
       update = await check();
     } catch (e) {
-      if (silent) { console.warn('Update check failed', e); return { kind: 'none' }; }
+      if (silent) {
+        console.warn('Update check failed', e);
+        return { kind: 'none' };
+      }
       throw e;
     }
     if (!update) return { kind: 'none' };
     if (await canSelfUpdate()) return { kind: 'ready', update };
     return { kind: 'manual', version: update.version, notes: update.body };
-  })().finally(() => { inFlight = null; });
+  })().finally(() => {
+    inFlight = null;
+  });
 
   return inFlight;
 }
@@ -51,10 +56,13 @@ export function dismissUpdateForSession(): void {
   dismissedThisSession = true;
 }
 
-export async function runUpdate(update: Update, onProgress?: (p: DownloadProgress) => void): Promise<void> {
+export async function runUpdate(
+  update: Update,
+  onProgress?: (p: DownloadProgress) => void,
+): Promise<void> {
   let downloaded = 0;
   let total = 0;
-  await update.downloadAndInstall((event) => {
+  await update.downloadAndInstall(event => {
     if (event.event === 'Started') {
       total = event.data.contentLength ?? 0;
       downloaded = 0;

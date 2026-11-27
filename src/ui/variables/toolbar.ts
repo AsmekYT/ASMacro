@@ -22,18 +22,31 @@ export function renderToolbar(container: HTMLElement, ctx: VariablesContext) {
     ui.rerender();
   });
   if (ui.searchHadFocus) {
-    requestAnimationFrame(() => { search.focus(); search.setSelectionRange(ui.searchCursorPos, ui.searchCursorPos); });
+    requestAnimationFrame(() => {
+      search.focus();
+      search.setSelectionRange(ui.searchCursorPos, ui.searchCursorPos);
+    });
   }
 
   const sortSelect = document.createElement('select');
   sortSelect.className = 'prop-select var-sort';
-  ([['name', t('vars.sort.name')], ['type', t('vars.sort.type')], ['usage', t('vars.sort.usage')]] as [SortBy, string][]).forEach(([val, label]) => {
+  (
+    [
+      ['name', t('vars.sort.name')],
+      ['type', t('vars.sort.type')],
+      ['usage', t('vars.sort.usage')],
+    ] as [SortBy, string][]
+  ).forEach(([val, label]) => {
     const opt = document.createElement('option');
-    opt.value = val; opt.innerText = label;
+    opt.value = val;
+    opt.innerText = label;
     if (val === ui.toolbarState.sortBy) opt.selected = true;
     sortSelect.appendChild(opt);
   });
-  sortSelect.addEventListener('change', () => { ui.toolbarState = { ...ui.toolbarState, sortBy: sortSelect.value as SortBy }; ui.rerender(); });
+  sortSelect.addEventListener('change', () => {
+    ui.toolbarState = { ...ui.toolbarState, sortBy: sortSelect.value as SortBy };
+    ui.rerender();
+  });
 
   const dirBtn = document.createElement('button');
   dirBtn.className = 'gui-btn var-icon-btn';
@@ -78,8 +91,15 @@ function openOverflowMenu(anchor: HTMLElement, ctx: VariablesContext) {
   exportBtn.onclick = async () => {
     menu.remove();
     const config = ctx.getConfig();
-    const entries = ctx.workspace.getVariableMap().getAllVariables().map(v => ({ name: v.getName(), config: config[v.getId()] ?? defaultConfig('number') }));
-    try { await ctx.exportToFile(exportVarsJson(entries)); } catch (e) { reportError(e, t('vars.exportFailed')); }
+    const entries = ctx.workspace
+      .getVariableMap()
+      .getAllVariables()
+      .map(v => ({ name: v.getName(), config: config[v.getId()] ?? defaultConfig('number') }));
+    try {
+      await ctx.exportToFile(exportVarsJson(entries));
+    } catch (e) {
+      reportError(e, t('vars.exportFailed'));
+    }
   };
 
   const importBtn = document.createElement('button');
@@ -94,17 +114,26 @@ function openOverflowMenu(anchor: HTMLElement, ctx: VariablesContext) {
       const names = new Set(map.getAllVariables().map(v => v.getName()));
       entries.forEach(entry => {
         let variable = map.getAllVariables().find(v => v.getName() === entry.name);
-        if (!variable) { variable = map.createVariable(entry.name); names.add(entry.name); }
+        if (!variable) {
+          variable = map.createVariable(entry.name);
+          names.add(entry.name);
+        }
         ctx.setConfig(variable.getId(), entry.config);
       });
-      if (errors.length > 0) toast(t('vars.importedWithErrors', { count: errors.length }), 'error', errors.join('\n'));
+      if (errors.length > 0)
+        toast(t('vars.importedWithErrors', { count: errors.length }), 'error', errors.join('\n'));
       else toast(t('vars.imported', { count: entries.length }));
-    } catch (e) { reportError(e, t('vars.importFailed')); }
+    } catch (e) {
+      reportError(e, t('vars.importFailed'));
+    }
   };
 
   const resetBtn = document.createElement('button');
   resetBtn.innerText = t('vars.resetAll');
-  resetBtn.onclick = () => { menu.remove(); vars.resetAll(); };
+  resetBtn.onclick = () => {
+    menu.remove();
+    vars.resetAll();
+  };
 
   [exportBtn, importBtn, resetBtn].forEach(b => menu.appendChild(b));
   ui.overflowMenuEl = menu;
@@ -117,6 +146,9 @@ function openOverflowMenu(anchor: HTMLElement, ctx: VariablesContext) {
   menu.style.top = Math.max(8, top) + 'px';
   menu.style.visibility = 'visible';
 
-  const onBodyClick = () => { menu.remove(); document.body.removeEventListener('click', onBodyClick); };
+  const onBodyClick = () => {
+    menu.remove();
+    document.body.removeEventListener('click', onBodyClick);
+  };
   setTimeout(() => document.body.addEventListener('click', onBodyClick));
 }

@@ -1,8 +1,19 @@
-import { settings, saveSettings, applySettingsToBackend, intensityPresets, type HumanizationIntensity, type Theme, type LanguagePref } from '../settings';
+import {
+  settings,
+  saveSettings,
+  applySettingsToBackend,
+  intensityPresets,
+  type HumanizationIntensity,
+  type Theme,
+  type LanguagePref,
+} from '../settings';
 import { bindCheck, bindNumber, bindSelect } from './bind';
 import { applyTheme, applyUiScale } from '../theme';
 import { getCurrentWindow } from '@tauri-apps/api/window';
-import { enable as enableAutostart, disable as disableAutostart } from '@tauri-apps/plugin-autostart';
+import {
+  enable as enableAutostart,
+  disable as disableAutostart,
+} from '@tauri-apps/plugin-autostart';
 import { reportError, toast } from './toast';
 import { t, setLang, initLang, availableLanguages } from '../i18n';
 import { escapeHtml } from './updateModal';
@@ -79,7 +90,12 @@ export function renderSettings(container: HTMLElement, ctx: SettingsContext) {
         <span class="dense-control">
           <select id="setLanguage" class="prop-select">
             <option value="auto" ${settings.language === 'auto' ? 'selected' : ''}>${t('settings.language.auto')}</option>
-            ${availableLanguages().map(l => `<option value="${escapeHtml(l.code)}" ${settings.language === l.code ? 'selected' : ''}>${escapeHtml(l.name)}</option>`).join('')}
+            ${availableLanguages()
+              .map(
+                l =>
+                  `<option value="${escapeHtml(l.code)}" ${settings.language === l.code ? 'selected' : ''}>${escapeHtml(l.name)}</option>`,
+              )
+              .join('')}
           </select>
         </span>
       </div>
@@ -154,37 +170,85 @@ export function renderSettings(container: HTMLElement, ctx: SettingsContext) {
   </div>
   `;
 
+  const persist = () => {
+    saveSettings();
+    applySettingsToBackend();
+  };
 
-  const persist = () => { saveSettings(); applySettingsToBackend(); };
+  bindCheck('setTray', v => (settings.minimizeToTray = v), persist);
+  bindSelect(
+    'setWindowOnRun',
+    v => (settings.windowOnRun = v as typeof settings.windowOnRun),
+    persist,
+  );
+  bindSelect(
+    'setAutoScope',
+    v => (settings.autoActivationScope = v as typeof settings.autoActivationScope),
+    persist,
+  );
 
-  bindCheck('setTray', v => settings.minimizeToTray = v, persist);
-  bindSelect('setWindowOnRun', v => settings.windowOnRun = v as typeof settings.windowOnRun, persist);
-  bindSelect('setAutoScope', v => settings.autoActivationScope = v as typeof settings.autoActivationScope, persist);
+  bindCheck(
+    'setStartWithSystem',
+    v => {
+      settings.startWithSystem = v;
+      (v ? enableAutostart() : disableAutostart()).catch(e =>
+        reportError(e, t('settings.autostart')),
+      );
+    },
+    persist,
+  );
+  bindCheck('setStartMinimized', v => (settings.startMinimized = v), persist);
+  bindCheck(
+    'setAlwaysOnTop',
+    v => {
+      settings.alwaysOnTop = v;
+      getCurrentWindow()
+        .setAlwaysOnTop(v)
+        .catch(() => {});
+    },
+    persist,
+  );
+  bindSelect(
+    'setTheme',
+    v => {
+      settings.theme = v as Theme;
+      applyTheme();
+      ctx.onThemeChange?.();
+    },
+    persist,
+  );
+  bindSelect(
+    'setLanguage',
+    v => {
+      settings.language = v as LanguagePref;
+      if (v === 'auto') {
+        initLang('auto').then(() => ctx.onLanguageChange?.());
+        return;
+      }
+      setLang(v);
+      ctx.onLanguageChange?.();
+    },
+    persist,
+  );
+  bindNumber(
+    'setUiScale',
+    v => {
+      settings.uiScale = Math.min(200, Math.max(50, v));
+      applyUiScale();
+    },
+    persist,
+  );
 
-  bindCheck('setStartWithSystem', v => {
-    settings.startWithSystem = v;
-    (v ? enableAutostart() : disableAutostart()).catch(e => reportError(e, t('settings.autostart')));
-  }, persist);
-  bindCheck('setStartMinimized', v => settings.startMinimized = v, persist);
-  bindCheck('setAlwaysOnTop', v => {
-    settings.alwaysOnTop = v;
-    getCurrentWindow().setAlwaysOnTop(v).catch(() => {});
-  }, persist);
-  bindSelect('setTheme', v => { settings.theme = v as Theme; applyTheme(); ctx.onThemeChange?.(); }, persist);
-  bindSelect('setLanguage', v => {
-    settings.language = v as LanguagePref;
-    if (v === 'auto') {
-      initLang('auto').then(() => ctx.onLanguageChange?.());
-      return;
-    }
-    setLang(v);
-    ctx.onLanguageChange?.();
-  }, persist);
-  bindNumber('setUiScale', v => { settings.uiScale = Math.min(200, Math.max(50, v)); applyUiScale(); }, persist);
-
-  bindCheck('setCheckUpdates', v => settings.checkUpdatesOnStart = v, persist);
+  bindCheck('setCheckUpdates', v => (settings.checkUpdatesOnStart = v), persist);
   const versionEl = document.getElementById('setAppVersion');
-  if (versionEl) getVersion().then(v => { versionEl.textContent = v; }).catch(() => { versionEl.textContent = '—'; });
+  if (versionEl)
+    getVersion()
+      .then(v => {
+        versionEl.textContent = v;
+      })
+      .catch(() => {
+        versionEl.textContent = '—';
+      });
   const updBtn = document.getElementById('checkUpdatesBtn') as HTMLButtonElement | null;
   updBtn?.addEventListener('click', async () => {
     updBtn.disabled = true;
@@ -202,23 +266,60 @@ export function renderSettings(container: HTMLElement, ctx: SettingsContext) {
     }
   });
 
-  bindNumber('setBlockDelay', v => settings.blockDelayMs = Math.max(0, v), persist);
-  bindCheck('setFailsafe', v => settings.failsafe = v, persist);
-  bindNumber('setMaxLoop', v => settings.maxLoopIterations = Math.max(0, Math.round(v)), persist);
+  bindNumber('setBlockDelay', v => (settings.blockDelayMs = Math.max(0, v)), persist);
+  bindCheck('setFailsafe', v => (settings.failsafe = v), persist);
+  bindNumber('setMaxLoop', v => (settings.maxLoopIterations = Math.max(0, Math.round(v))), persist);
 
-  bindCheck('setHumEnabled', v => settings.humanization.enabled = v, persist);
-  (document.getElementById('setHumIntensity') as HTMLSelectElement)?.addEventListener('change', (e) => {
-    const val = (e.target as HTMLSelectElement).value as HumanizationIntensity;
-    settings.humanization.intensity = val;
-    if (val !== 'custom') {
-      Object.assign(settings.humanization, intensityPresets[val]);
-      persist(); renderSettings(container, ctx); return;
-    }
-    persist();
-  });
-  const markCustom = () => { settings.humanization.intensity = 'custom'; const sel = document.getElementById('setHumIntensity') as HTMLSelectElement; if (sel) sel.value = 'custom'; };
-  bindNumber('setHumSpeed', v => { settings.humanization.speedMult = Math.max(0.1, v); markCustom(); }, persist);
-  bindNumber('setHumJitter', v => { settings.humanization.jitterPx = Math.max(0, v); markCustom(); }, persist);
-  bindNumber('setHumVariance', v => { settings.humanization.variancePct = Math.min(80, Math.max(0, v)); markCustom(); }, persist);
-  bindCheck('setHumOvershoot', v => { settings.humanization.overshoot = v; markCustom(); }, persist);
+  bindCheck('setHumEnabled', v => (settings.humanization.enabled = v), persist);
+  (document.getElementById('setHumIntensity') as HTMLSelectElement)?.addEventListener(
+    'change',
+    e => {
+      const val = (e.target as HTMLSelectElement).value as HumanizationIntensity;
+      settings.humanization.intensity = val;
+      if (val !== 'custom') {
+        Object.assign(settings.humanization, intensityPresets[val]);
+        persist();
+        renderSettings(container, ctx);
+        return;
+      }
+      persist();
+    },
+  );
+  const markCustom = () => {
+    settings.humanization.intensity = 'custom';
+    const sel = document.getElementById('setHumIntensity') as HTMLSelectElement;
+    if (sel) sel.value = 'custom';
+  };
+  bindNumber(
+    'setHumSpeed',
+    v => {
+      settings.humanization.speedMult = Math.max(0.1, v);
+      markCustom();
+    },
+    persist,
+  );
+  bindNumber(
+    'setHumJitter',
+    v => {
+      settings.humanization.jitterPx = Math.max(0, v);
+      markCustom();
+    },
+    persist,
+  );
+  bindNumber(
+    'setHumVariance',
+    v => {
+      settings.humanization.variancePct = Math.min(80, Math.max(0, v));
+      markCustom();
+    },
+    persist,
+  );
+  bindCheck(
+    'setHumOvershoot',
+    v => {
+      settings.humanization.overshoot = v;
+      markCustom();
+    },
+    persist,
+  );
 }

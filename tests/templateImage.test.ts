@@ -9,7 +9,11 @@ describe('shrinkAssets', () => {
       return v.startsWith('data:image/png') ? 'data:image/webp;base64,A' : v;
     });
     expect(changed).toBe(true);
-    expect(assets).toEqual({ a: 'data:image/webp;base64,A', b: 'data:image/webp;base64,BB', c: 'bad' });
+    expect(assets).toEqual({
+      a: 'data:image/webp;base64,A',
+      b: 'data:image/webp;base64,BB',
+      c: 'bad',
+    });
     expect(await shrinkAssets(assets, async v => v)).toBe(false);
   });
 });

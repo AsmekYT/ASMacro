@@ -5,7 +5,9 @@ import { workspaceToDoc, loadDocIntoWorkspace, newMacroDoc } from '../src/storag
 import { evaluateNode } from '../src/interpreter';
 
 describe('auto activation condition', () => {
-  beforeAll(() => { initBlocks(); });
+  beforeAll(() => {
+    initBlocks();
+  });
 
   it('survives save and load', async () => {
     const source = new Blockly.Workspace();

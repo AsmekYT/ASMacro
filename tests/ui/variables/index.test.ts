@@ -1,12 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as Blockly from 'blockly';
-import { renderVariables, disposeVariablesPanel, type VariablesContext } from '../../../src/ui/variables/index';
+import {
+  renderVariables,
+  disposeVariablesPanel,
+  type VariablesContext,
+} from '../../../src/ui/variables/index';
 import { vars } from '../../../src/variables';
 
 function fakeWorkspace(varList: { id: string; name: string }[] = []) {
   const varMap = {
     getAllVariables: () => varList.map(v => ({ getId: () => v.id, getName: () => v.name })),
-    getVariableById: (id: string) => varList.find(v => v.id === id) ? { getId: () => id, getName: () => varList.find(v => v.id === id)!.name } : null,
+    getVariableById: (id: string) =>
+      varList.find(v => v.id === id)
+        ? { getId: () => id, getName: () => varList.find(v => v.id === id)!.name }
+        : null,
     createVariable: vi.fn(),
     renameVariable: vi.fn(),
     deleteVariable: vi.fn(),
@@ -33,7 +40,9 @@ function fakeContext(overrides: Partial<VariablesContext> = {}): VariablesContex
 }
 
 describe('renderVariables', () => {
-  beforeEach(() => { disposeVariablesPanel(); });
+  beforeEach(() => {
+    disposeVariablesPanel();
+  });
 
   it('empty', () => {
     const container = document.createElement('div');

@@ -1,20 +1,31 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 
 vi.mock('@tauri-apps/api/core', () => ({
-  invoke: vi.fn(async (cmd: string) => cmd === 'list_screens'
-    ? [
-        { index: 0, x: 0, y: 0, w: 1920, h: 1080, is_primary: true, name: 'Dell U2414H' },
-        { index: 1, x: 1920, y: 0, w: 1920, h: 1200, is_primary: false, name: null },
-      ]
-    : { running: false, clicks: 0 }),
+  invoke: vi.fn(async (cmd: string) =>
+    cmd === 'list_screens'
+      ? [
+          { index: 0, x: 0, y: 0, w: 1920, h: 1080, is_primary: true, name: 'Dell U2414H' },
+          { index: 1, x: 1920, y: 0, w: 1920, h: 1200, is_primary: false, name: null },
+        ]
+      : { running: false, clicks: 0 },
+  ),
 }));
 vi.mock('@tauri-apps/api/event', () => ({ listen: vi.fn(async () => () => {}) }));
-vi.mock('../../src/ui/clickOverlay', () => ({ showOverlayFor: vi.fn(async () => {}), hideClickOverlay: vi.fn(async () => {}) }));
+vi.mock('../../src/ui/clickOverlay', () => ({
+  showOverlayFor: vi.fn(async () => {}),
+  hideClickOverlay: vi.fn(async () => {}),
+}));
 
 import { renderAutoclicker, disposeAutoclickerPanel } from '../../src/ui/autoclicker';
 import { autoclicker } from '../../src/autoclicker';
 
-const F6 = { ctrl: false, alt: false, shift: false, win: false, trigger: { kind: 'key' as const, vk: 117, label: 'F6' } };
+const F6 = {
+  ctrl: false,
+  alt: false,
+  shift: false,
+  win: false,
+  trigger: { kind: 'key' as const, vk: 117, label: 'F6' },
+};
 
 function render(patch: Record<string, unknown> = {}) {
   autoclicker.hotkey = F6;
@@ -33,17 +44,33 @@ function change(input: HTMLInputElement | HTMLSelectElement, value: boolean | st
 }
 
 describe('autoclicker panel', () => {
-  afterEach(() => { disposeAutoclickerPanel(); document.body.innerHTML = ''; });
+  afterEach(() => {
+    disposeAutoclickerPanel();
+    document.body.innerHTML = '';
+  });
 
   it('status and summary', () => {
-    const $ = render({ targetKind: 'mouse', button: 'LEFT', positionMode: 'fixed', posX: 40, posY: 60, randomRate: false, rate: 600, unit: 'minute', limitClicks: 0, limitSeconds: 0 });
+    const $ = render({
+      targetKind: 'mouse',
+      button: 'LEFT',
+      positionMode: 'fixed',
+      posX: 40,
+      posY: 60,
+      randomRate: false,
+      rate: 600,
+      unit: 'minute',
+      limitClicks: 0,
+      limitSeconds: 0,
+    });
     expect($('acToggleBtn')).toBeNull();
     expect($('acStatusText').textContent).toBe('Stopped');
     expect($('acSummary').textContent).toBe('Clicks the Left mouse button, 10/s, at 40, 60.');
   });
 
   it('no warning with a hotkey', () => {
-    const $ = render({ hotkey: { ...F6, trigger: { kind: 'mouse', button: 'x1', label: 'Mouse4' } } });
+    const $ = render({
+      hotkey: { ...F6, trigger: { kind: 'mouse', button: 'x1', label: 'Mouse4' } },
+    });
     expect($('acHotkeyWarn').style.display).toBe('none');
   });
 
@@ -59,7 +86,13 @@ describe('autoclicker panel', () => {
   });
 
   it('sequence toggle', () => {
-    const $ = render({ positionMode: 'fixed', basePositionMode: 'fixed', showMarkers: false, showPointMarkers: false, points: [{ x: 10, y: 20 }] });
+    const $ = render({
+      positionMode: 'fixed',
+      basePositionMode: 'fixed',
+      showMarkers: false,
+      showPointMarkers: false,
+      points: [{ x: 10, y: 20 }],
+    });
     const xy = $('acFixedPosGroup');
     const select = $<HTMLSelectElement>('acPositionMode');
     const toggle = $<HTMLInputElement>('acUseSequence');

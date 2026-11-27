@@ -1,7 +1,11 @@
 export type BlockTextEntry = { message0: string; message1?: string; tooltip?: string };
 
 export const BLOCK_TEXT: Record<string, BlockTextEntry> = {
-  macro_start: { message0: 'block.macro_start', message1: 'block.macro_start.when', tooltip: 'block.macro_start.tip' },
+  macro_start: {
+    message0: 'block.macro_start',
+    message1: 'block.macro_start.when',
+    tooltip: 'block.macro_start.tip',
+  },
   action_mouse_move: { message0: 'block.action_mouse_move' },
   action_mouse_move_rel: { message0: 'block.action_mouse_move_rel' },
   action_mouse_move_found: { message0: 'block.action_mouse_move_found' },
@@ -39,7 +43,10 @@ export const BLOCK_TEXT: Record<string, BlockTextEntry> = {
   sensor_region_change: { message0: 'block.sensor_region_change' },
   sensor_screen_text: { message0: 'block.sensor_screen_text' },
   action_run_program: { message0: 'block.action_run_program' },
-  action_switch_window: { message0: 'block.action_switch_window', tooltip: 'block.action_switch_window.tip' },
+  action_switch_window: {
+    message0: 'block.action_switch_window',
+    tooltip: 'block.action_switch_window.tip',
+  },
   action_log: { message0: 'block.action_log' },
   list_length: { message0: 'block.list_length' },
   list_get: { message0: 'block.list_get', tooltip: 'block.oneBasedIndex' },

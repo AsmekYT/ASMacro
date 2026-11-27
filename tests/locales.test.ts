@@ -1,7 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import type { Locale } from '../src/i18n';
 
-const files = import.meta.glob<Locale>('../src/i18n/locales/*.json', { eager: true, import: 'default' });
+const files = import.meta.glob<Locale>('../src/i18n/locales/*.json', {
+  eager: true,
+  import: 'default',
+});
 const en = Object.values(files).find(l => l.language.code === 'en')!;
 const placeholders = (s: string) => (s.match(/\{\w+\}|%\d/g) ?? []).sort().join(',');
 

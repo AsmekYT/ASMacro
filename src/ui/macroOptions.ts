@@ -15,7 +15,8 @@ export function renderMacroOptions(
     Object.assign(activation, patch);
     onChange({ ...activation });
   };
-  const rerender = () => renderMacroOptions(container, { ...doc, activation: { ...activation } }, onChange);
+  const rerender = () =>
+    renderMacroOptions(container, { ...doc, activation: { ...activation } }, onChange);
 
   const label = (text: string) => {
     const el = document.createElement('span');
@@ -30,21 +31,31 @@ export function renderMacroOptions(
     btn.className = 'gui-btn macro-options-hotkey';
     btn.title = title;
     btn.innerText = activation[field] ?? '';
-    bindHotkeyButton(btn, () => activation[field] ?? '', (combo) => update({ [field]: combo }), async () => {});
+    bindHotkeyButton(
+      btn,
+      () => activation[field] ?? '',
+      combo => update({ [field]: combo }),
+      async () => {},
+    );
     container.appendChild(btn);
   };
 
   label(t('activation.label'));
   const select = document.createElement('select');
   select.className = 'prop-select macro-options-select';
-  ([['manual', 'activation.manual'], ['shortcut', 'activation.shortcut'], ['auto', 'activation.auto']] as const)
-    .forEach(([value, key]) => {
-      const opt = document.createElement('option');
-      opt.value = value;
-      opt.innerText = t(key);
-      if (value === activation.mode) opt.selected = true;
-      select.appendChild(opt);
-    });
+  (
+    [
+      ['manual', 'activation.manual'],
+      ['shortcut', 'activation.shortcut'],
+      ['auto', 'activation.auto'],
+    ] as const
+  ).forEach(([value, key]) => {
+    const opt = document.createElement('option');
+    opt.value = value;
+    opt.innerText = t(key);
+    if (value === activation.mode) opt.selected = true;
+    select.appendChild(opt);
+  });
   select.addEventListener('change', () => {
     update({ mode: select.value as MacroActivation['mode'] });
     rerender();
@@ -81,7 +92,9 @@ export function renderMacroOptions(
     delay.min = '0';
     delay.className = 'prop-input macro-options-delay';
     delay.value = String(activation.delayMs ?? 0);
-    delay.addEventListener('input', () => update({ delayMs: Math.max(0, Number(delay.value) || 0) }));
+    delay.addEventListener('input', () =>
+      update({ delayMs: Math.max(0, Number(delay.value) || 0) }),
+    );
     container.appendChild(delay);
   }
 }

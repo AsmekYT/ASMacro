@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { filterAndSortVars, validateName, duplicateName, validateValue, exportVarsJson, importVarsJson, type SortableRow } from '../src/varModel';
+import {
+  filterAndSortVars,
+  validateName,
+  duplicateName,
+  validateValue,
+  exportVarsJson,
+  importVarsJson,
+  type SortableRow,
+} from '../src/varModel';
 
 describe('filterAndSortVars', () => {
   const rows: SortableRow[] = [
@@ -12,7 +20,11 @@ describe('filterAndSortVars', () => {
   it('filter and sort', () => {
     expect(names(filterAndSortVars(rows, { query: 'AL' }))).toEqual(['alpha']);
     expect(names(filterAndSortVars(rows))).toEqual(['alpha', 'beta', 'gamma']);
-    expect(names(filterAndSortVars(rows, { sortBy: 'name', dir: 'desc' }))).toEqual(['gamma', 'beta', 'alpha']);
+    expect(names(filterAndSortVars(rows, { sortBy: 'name', dir: 'desc' }))).toEqual([
+      'gamma',
+      'beta',
+      'alpha',
+    ]);
     expect(names(filterAndSortVars(rows, { sortBy: 'type' }))).toEqual(['beta', 'gamma', 'alpha']);
   });
 
@@ -65,10 +77,12 @@ describe('export/import', () => {
     expect(importVarsJson('not json')).toMatchObject({ entries: [] });
     expect(importVarsJson('not json').errors).not.toHaveLength(0);
     expect(importVarsJson('{"a":1}').errors).not.toHaveLength(0);
-    const mixed = importVarsJson(JSON.stringify([
-      { name: 'good', config: { type: 'number', initial: 1 } },
-      { name: 'bad', config: { type: 'bogus', initial: 1 } },
-    ]));
+    const mixed = importVarsJson(
+      JSON.stringify([
+        { name: 'good', config: { type: 'number', initial: 1 } },
+        { name: 'bad', config: { type: 'bogus', initial: 1 } },
+      ]),
+    );
     expect(mixed.entries).toEqual([{ name: 'good', config: { type: 'number', initial: 1 } }]);
     expect(mixed.errors).toHaveLength(1);
   });

@@ -35,7 +35,9 @@ export function renderVariables(container: HTMLElement, ctx: VariablesContext) {
   const config = ctx.getConfig();
   const blockVars = map.getAllVariables();
   const liveIds = new Set(blockVars.map(v => v.getId()));
-  Object.keys(config).forEach(id => { if (!liveIds.has(id)) ctx.removeConfig(id); });
+  Object.keys(config).forEach(id => {
+    if (!liveIds.has(id)) ctx.removeConfig(id);
+  });
 
   container.innerHTML = '';
 
@@ -44,7 +46,15 @@ export function renderVariables(container: HTMLElement, ctx: VariablesContext) {
     const cfg = config[id];
     const type: VarType = cfg?.type ?? 'number';
     const usage = analyzeUsage(ctx.workspace, id);
-    return { id, name: v.getName(), type, pinned: !!cfg?.pinned, usageCount: usage.reads.length + usage.writes.length, cfg, usage };
+    return {
+      id,
+      name: v.getName(),
+      type,
+      pinned: !!cfg?.pinned,
+      usageCount: usage.reads.length + usage.writes.length,
+      cfg,
+      usage,
+    };
   });
 
   renderToolbar(container, ctx);
@@ -82,7 +92,10 @@ export function renderVariables(container: HTMLElement, ctx: VariablesContext) {
     ui.pendingFocusId = null;
     ui.expandedIds.add(id);
     const nameInput = ui.rowElRefs.get(id)?.querySelector<HTMLInputElement>('.var-name-input');
-    if (nameInput) { nameInput.focus(); nameInput.select(); }
+    if (nameInput) {
+      nameInput.focus();
+      nameInput.select();
+    }
   }
 
   const unsubscribe = vars.onChange((s: VarSlot) => {
@@ -99,7 +112,11 @@ export function renderVariables(container: HTMLElement, ctx: VariablesContext) {
 }
 
 const TYPE_LABEL_KEY: Record<VarType, string> = {
-  number: 'vars.type.numbers', string: 'vars.type.text', boolean: 'vars.type.booleans', list: 'vars.type.lists', object: 'vars.type.objects',
+  number: 'vars.type.numbers',
+  string: 'vars.type.text',
+  boolean: 'vars.type.booleans',
+  list: 'vars.type.lists',
+  object: 'vars.type.objects',
 };
 
 function groupRows(sorted: Row[]): { label: string; rows: Row[] }[] {

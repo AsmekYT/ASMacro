@@ -9,8 +9,15 @@ import activation from '../assets/icons/activation.svg?raw';
 import points from '../assets/icons/points.svg?raw';
 
 export const icons = {
-  editor, variables, autoclicker, settings,
-  target, rate, position, activation, points,
+  editor,
+  variables,
+  autoclicker,
+  settings,
+  target,
+  rate,
+  position,
+  activation,
+  points,
 };
 
 export function mountIcons(root: ParentNode = document) {

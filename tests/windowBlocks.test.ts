@@ -10,10 +10,18 @@ vi.mock('../src/ui/toast', () => ({ toast: (...args: any[]) => toastMock(...args
 import { executeBlocks, evaluateNode, interpreterState } from '../src/interpreter';
 import { settings } from '../src/settings';
 
-const ws = { highlightBlock: () => {}, getAllVariables: () => [] } as unknown as Blockly.WorkspaceSvg;
+const ws = {
+  highlightBlock: () => {},
+  getAllVariables: () => [],
+} as unknown as Blockly.WorkspaceSvg;
 
 function text(value: string) {
-  return { type: 'text', data: null, id: 'txt', getFieldValue: (n: string) => (n === 'TEXT' ? value : undefined) } as unknown as Blockly.Block;
+  return {
+    type: 'text',
+    data: null,
+    id: 'txt',
+    getFieldValue: (n: string) => (n === 'TEXT' ? value : undefined),
+  } as unknown as Blockly.Block;
 }
 
 function run(type: string, input: string, value: string, data: Record<string, unknown>) {
@@ -54,13 +62,19 @@ describe('action_run_program', () => {
   ])('%j', async (data, waitReady, timeoutMs) => {
     invokeMock.mockResolvedValue(true);
     await run('action_run_program', 'PATH', 'app.exe', data);
-    expect(invokeMock).toHaveBeenCalledWith('run_program', { path: 'app.exe', waitReady, timeoutMs });
+    expect(invokeMock).toHaveBeenCalledWith('run_program', {
+      path: 'app.exe',
+      waitReady,
+      timeoutMs,
+    });
     expect(toastMock).not.toHaveBeenCalled();
   });
 
   it('warns on timeout', async () => {
     invokeMock.mockResolvedValue(false);
-    expect(await run('action_run_program', 'PATH', 'daemon', { wait_ready: 'YES', timeout: 1000 })).toBeNull();
+    expect(
+      await run('action_run_program', 'PATH', 'daemon', { wait_ready: 'YES', timeout: 1000 }),
+    ).toBeNull();
     expect(toastMock).toHaveBeenCalledTimes(1);
   });
 });
@@ -72,7 +86,12 @@ describe('action_switch_window', () => {
   ])('%j', async (data, matchMode, caseSensitive, timeoutMs) => {
     invokeMock.mockResolvedValue(true);
     await run('action_switch_window', 'TITLE', 'Firefox', data);
-    expect(invokeMock).toHaveBeenCalledWith('switch_to_window', { title: 'Firefox', matchMode, caseSensitive, timeoutMs });
+    expect(invokeMock).toHaveBeenCalledWith('switch_to_window', {
+      title: 'Firefox',
+      matchMode,
+      caseSensitive,
+      timeoutMs,
+    });
     expect(toastMock).not.toHaveBeenCalled();
   });
 

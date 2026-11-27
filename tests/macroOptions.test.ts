@@ -1,10 +1,20 @@
 import { describe, it, expect, vi } from 'vitest';
-import { activationOf, defaultActivation, macroShortcuts, canRunManually, newMacroDoc, type MacroActivation } from '../src/storage';
+import {
+  activationOf,
+  defaultActivation,
+  macroShortcuts,
+  canRunManually,
+  newMacroDoc,
+  type MacroActivation,
+} from '../src/storage';
 
 vi.mock('@tauri-apps/plugin-global-shortcut', () => ({ register: vi.fn(), unregister: vi.fn() }));
 const { collectMacroHotkeys } = await import('../src/app/hotkeys');
 
-const withActivation = (id: string, activation: MacroActivation) => ({ ...newMacroDoc(id, id), activation });
+const withActivation = (id: string, activation: MacroActivation) => ({
+  ...newMacroDoc(id, id),
+  activation,
+});
 
 describe('activationOf', () => {
   it('defaults to manual', () => {
@@ -14,7 +24,11 @@ describe('activationOf', () => {
 
   it('fills missing fields', () => {
     const doc = withActivation('m2', { mode: 'shortcut', shortcut: 'Ctrl+Shift+R' });
-    expect(activationOf(doc)).toEqual({ ...defaultActivation, mode: 'shortcut', shortcut: 'Ctrl+Shift+R' });
+    expect(activationOf(doc)).toEqual({
+      ...defaultActivation,
+      mode: 'shortcut',
+      shortcut: 'Ctrl+Shift+R',
+    });
   });
 });
 
@@ -26,7 +40,9 @@ describe('shortcuts per mode', () => {
   });
 
   it('shortcut', () => {
-    const a = activationOf(withActivation('m', { mode: 'shortcut', shortcut: 'F9', stopShortcut: 'F10' }));
+    const a = activationOf(
+      withActivation('m', { mode: 'shortcut', shortcut: 'F9', stopShortcut: 'F10' }),
+    );
     expect(macroShortcuts(a)).toEqual({ start: 'F9', stop: 'F10' });
   });
 

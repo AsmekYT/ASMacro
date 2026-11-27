@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -7,11 +7,13 @@
     <link rel="stylesheet" href="/src/styles.css" />
   </head>
   <body>
-    <div id="targetToast" class="hidden" data-i18n="picker.waitingHotkey">Waiting... Press [Ctrl + Shift + X]</div>
+    <div id="targetToast" class="hidden" data-i18n="picker.waitingHotkey">
+      Waiting... Press [Ctrl + Shift + X]
+    </div>
     <div id="screenshotOverlay" class="hidden"><canvas id="screenshotCanvas"></canvas></div>
 
     <div id="keyboardModal" class="modal-overlay hidden">
-      <div class="modal-content" style="max-width: 850px;">
+      <div class="modal-content" style="max-width: 850px">
         <div class="modal-body"></div>
       </div>
     </div>
@@ -24,7 +26,9 @@
 
     <div id="app">
       <header id="topHeader">
-        <div class="logo-area"><img src="/src/assets/asmacro-icon.svg" alt="ASMacro" /> ASMacro</div>
+        <div class="logo-area">
+          <img src="/src/assets/asmacro-icon.svg" alt="ASMacro" /> ASMacro
+        </div>
         <div class="tabs-area">
           <div id="macroTabs" class="macro-tabs"></div>
           <button id="addMacroBtn" class="tab" data-i18n-title="html.createMacro">＋</button>
@@ -65,7 +69,9 @@
           <div class="right-sidebar-content">
             <div class="right-sidebar-header">
               <h3 data-i18n="panel.properties">Properties</h3>
-              <button id="closePropertiesBtn" class="close-btn" data-i18n-title="html.closePanel">×</button>
+              <button id="closePropertiesBtn" class="close-btn" data-i18n-title="html.closePanel">
+                ×
+              </button>
             </div>
             <div id="propertiesContent"></div>
           </div>

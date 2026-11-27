@@ -19,7 +19,9 @@ function loadState(): PanelState {
 }
 
 function saveState(state: PanelState) {
-  try { localStorage.setItem(STATE_KEY, JSON.stringify(state)); } catch (e) {}
+  try {
+    localStorage.setItem(STATE_KEY, JSON.stringify(state));
+  } catch (e) {}
 }
 
 let state = loadState();
@@ -59,14 +61,14 @@ export function initPanelHost(opts: {
 
   if (resizerEl) {
     let dragging = false;
-    resizerEl.addEventListener('pointerdown', (e) => {
+    resizerEl.addEventListener('pointerdown', e => {
       if (mode === 'full') return;
       dragging = true;
       panelEl?.classList.add('resizing');
       if (blocklyDivEl) blocklyDivEl.style.pointerEvents = 'none';
       e.preventDefault();
     });
-    window.addEventListener('pointermove', (e) => {
+    window.addEventListener('pointermove', e => {
       if (!dragging || !panelEl) return;
       const rect = panelEl.getBoundingClientRect();
       const width = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, rect.right - e.clientX));
@@ -83,12 +85,15 @@ export function initPanelHost(opts: {
     });
   }
 
-  document.addEventListener('keydown', (e) => {
+  document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
     const tag = (e.target as HTMLElement | null)?.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
     const openModal = document.querySelector<HTMLElement>('.modal-overlay:not(.hidden)');
-    if (openModal) { openModal.classList.add('hidden'); return; }
+    if (openModal) {
+      openModal.classList.add('hidden');
+      return;
+    }
     if (mode === 'full' && panelEl && !panelEl.classList.contains('hidden')) {
       onEscape?.();
     }

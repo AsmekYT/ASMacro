@@ -37,10 +37,13 @@ describe('VariableStore', () => {
   });
 
   it('min/max and const', () => {
-    const { store } = storeWith({
-      a: { type: 'number', initial: 0, min: 0, max: 10 },
-      b: { type: 'number', initial: 5, isConst: true },
-    }, ['a', 'b']);
+    const { store } = storeWith(
+      {
+        a: { type: 'number', initial: 0, min: 0, max: 10 },
+        b: { type: 'number', initial: 5, isConst: true },
+      },
+      ['a', 'b'],
+    );
     store.set('a', 99);
     expect(store.get('a')).toBe(10);
     store.change('a', -999);
@@ -52,7 +55,10 @@ describe('VariableStore', () => {
   });
 
   it('change', () => {
-    const { store } = storeWith({ a: { type: 'number', initial: 0 }, s: { type: 'string', initial: 'hi' } }, ['a', 's']);
+    const { store } = storeWith(
+      { a: { type: 'number', initial: 0 }, s: { type: 'string', initial: 'hi' } },
+      ['a', 's'],
+    );
     store.change('a', 5);
     store.change('a', -2);
     store.change('s', 5);

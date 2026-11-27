@@ -7,19 +7,35 @@ import { initLang, t, applyI18n, getLang, detectInstallerLang } from './i18n';
 import { interpreterState, executeBlocks, isStopped } from './interpreter';
 import { settings, saveSettings, applySettingsToBackend } from './settings';
 import { initTheme, resolveThemeMode } from './theme';
-import { enable as enableAutostart, disable as disableAutostart } from '@tauri-apps/plugin-autostart';
+import {
+  enable as enableAutostart,
+  disable as disableAutostart,
+} from '@tauri-apps/plugin-autostart';
 import { initMultiselect } from './multiselect';
 import { vars, type VarConfig } from './variables';
 import { defaultConfig } from './varModel';
-import { localStore, workspaceToDoc, loadDocIntoWorkspace, newMacroDoc, activationOf, macroShortcuts, canRunManually, type MacroDoc } from './storage';
+import {
+  localStore,
+  workspaceToDoc,
+  loadDocIntoWorkspace,
+  newMacroDoc,
+  activationOf,
+  macroShortcuts,
+  canRunManually,
+  type MacroDoc,
+} from './storage';
 import { reportError } from './ui/toast';
 import { promptDialog, confirmDialog } from './ui/modal';
 import { renderProperties } from './ui/properties';
 import { renderMacroTabs, openMenu, closeMenu } from './ui/macroTabs';
 import { createHotkeys, type MacroHotkeyAction } from './app/hotkeys';
 import {
-  genId, saveMacroToFile, readMacroFromPath, pickAndReadMacro,
-  exportVariablesToFile, importVariablesFromFile,
+  genId,
+  saveMacroToFile,
+  readMacroFromPath,
+  pickAndReadMacro,
+  exportVariablesToFile,
+  importVariablesFromFile,
 } from './app/macroFiles';
 import { shrinkAssets } from './templateImage';
 import { renderMacroOptions } from './ui/macroOptions';
@@ -27,9 +43,17 @@ import { renderSettings } from './ui/settings';
 import { renderVariables, disposeVariablesPanel } from './ui/variables';
 import { renderAutoclicker, disposeAutoclickerPanel } from './ui/autoclicker';
 import {
-  initAutoclickerRuntime, applyAutoclickerHotkey, isAutoclickerRunning,
-  applyAutoclickerConfig, cloneAutoclickerConfig, onAutoclickerConfigChange, updateAutoclickerConfig,
-  autoclicker, onAutoclickerRunningChange, toggleAutoclicker, normalizeAutoclickerConfig,
+  initAutoclickerRuntime,
+  applyAutoclickerHotkey,
+  isAutoclickerRunning,
+  applyAutoclickerConfig,
+  cloneAutoclickerConfig,
+  onAutoclickerConfigChange,
+  updateAutoclickerConfig,
+  autoclicker,
+  onAutoclickerRunningChange,
+  toggleAutoclicker,
+  normalizeAutoclickerConfig,
 } from './autoclicker';
 import { showOverlayFor, hideClickOverlay } from './ui/clickOverlay';
 import { initPanelHost, setPanelTitle, showPanel, hidePanel, panelContent } from './ui/panelHost';
@@ -42,7 +66,7 @@ window.onerror = (message, source, lineno, colno, error) => {
   const where = source ? ` (${source}:${lineno ?? '?'}:${colno ?? '?'})` : '';
   reportError(error ?? message, `${t('error.unexpected')}${where}`);
 };
-window.onunhandledrejection = (event) => {
+window.onunhandledrejection = event => {
   reportError(event.reason, t('error.unexpected'));
 };
 
@@ -54,7 +78,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   mountIcons();
   const INSTALLER_LANG_APPLIED = 'asmacro_installer_lang_applied_v1';
   const installerLangApplied = (() => {
-    try { return localStorage.getItem(INSTALLER_LANG_APPLIED) === '1'; } catch { return false; }
+    try {
+      return localStorage.getItem(INSTALLER_LANG_APPLIED) === '1';
+    } catch {
+      return false;
+    }
   })();
   if (settings.language === 'auto' && !installerLangApplied) {
     const installerLang = await detectInstallerLang();
@@ -62,7 +90,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       settings.language = installerLang;
       saveSettings();
     }
-    try { localStorage.setItem(INSTALLER_LANG_APPLIED, '1'); } catch {}
+    try {
+      localStorage.setItem(INSTALLER_LANG_APPLIED, '1');
+    } catch {}
   }
   await initLang(settings.language);
   document.documentElement.lang = getLang();
@@ -104,14 +134,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   initAutoclickerRuntime();
   void applyAutoclickerHotkey();
 
-  onAutoclickerRunningChange((running) => {
+  onAutoclickerRunningChange(running => {
     if (running) void showOverlayFor(autoclicker);
     else if (currentTab !== 'autoclicker') void hideClickOverlay();
   });
 
   let currentTab: 'editor' | 'variables' | 'autoclicker' | 'settings' = 'editor';
 
-  listen<{ id: string; action: MacroHotkeyAction }>('macro-hotkey', (event) => {
+  listen<{ id: string; action: MacroHotkeyAction }>('macro-hotkey', event => {
     const { id, action } = event.payload;
     onMacroHotkey(id, action, delayOf(id));
   });
@@ -142,15 +172,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   if (settings.checkUpdatesOnStart) {
     checkForUpdate(true)
-      .then(result => { if (result.kind !== 'none') return showUpdateModal(result); })
+      .then(result => {
+        if (result.kind !== 'none') return showUpdateModal(result);
+      })
       .catch(e => console.warn('Startup update check failed', e));
   }
 
   (settings.startWithSystem ? enableAutostart() : disableAutostart()).catch(() => {});
-  if (settings.alwaysOnTop) { getCurrentWindow().setAlwaysOnTop(true).catch(() => {}); }
-  if (settings.startMinimized) { getCurrentWindow().hide().catch(() => {}); }
+  if (settings.alwaysOnTop) {
+    getCurrentWindow()
+      .setAlwaysOnTop(true)
+      .catch(() => {});
+  }
+  if (settings.startMinimized) {
+    getCurrentWindow()
+      .hide()
+      .catch(() => {});
+  }
 
-  listen<string>('tray-action', (event) => {
+  listen<string>('tray-action', event => {
     if (event.payload === 'run') runBtn?.click();
     if (event.payload === 'stop') void stopRun();
     if (event.payload === 'autoclicker-toggle') void toggleAutoclicker();
@@ -164,9 +204,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     saveCurrentWorkspaceToMacro();
   }
 
-  getCurrentWindow().onCloseRequested(async (event) => {
+  getCurrentWindow().onCloseRequested(async event => {
     flushSave();
-    if (settings.minimizeToTray) { event.preventDefault(); await getCurrentWindow().hide(); }
+    if (settings.minimizeToTray) {
+      event.preventDefault();
+      await getCurrentWindow().hide();
+    }
   });
 
   const CURRENT_MACRO_KEY = 'asmacro_current_macro';
@@ -176,7 +219,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function ensureDefaultMacro() {
     if (macros.length) return;
-    const d = newMacroDoc('macro-0', t('macro.main')); macros.push(d); await localStore.put(d);
+    const d = newMacroDoc('macro-0', t('macro.main'));
+    macros.push(d);
+    await localStore.put(d);
   }
 
   async function loadMacros() {
@@ -184,26 +229,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     for (const m of macros) if (await shrinkAssets(m.assets)) await localStore.put(m);
     await ensureDefaultMacro();
     const saved = localStorage.getItem(CURRENT_MACRO_KEY);
-    currentMacroId = (saved && macros.some(m => m.id === saved)) ? saved : macros[0]!.id;
+    currentMacroId = saved && macros.some(m => m.id === saved) ? saved : macros[0]!.id;
   }
 
   function rememberCurrentMacro() {
-    try { localStorage.setItem(CURRENT_MACRO_KEY, currentMacroId); } catch (e) {}
+    try {
+      localStorage.setItem(CURRENT_MACRO_KEY, currentMacroId);
+    } catch (e) {}
   }
 
   const tabsContainer = document.getElementById('macroTabs');
   const addMacroBtn = document.getElementById('addMacroBtn');
 
-  document.addEventListener('contextmenu', (e) => {
-    e.preventDefault();
-    closeMenu();
-  }, true);
+  document.addEventListener(
+    'contextmenu',
+    e => {
+      e.preventDefault();
+      closeMenu();
+    },
+    true,
+  );
 
   function renderTabs() {
     if (!tabsContainer) return;
     renderMacroTabs(tabsContainer, {
-      macros, currentId: currentMacroId,
-      onSwitch: (id) => { void switchMacro(id); },
+      macros,
+      currentId: currentMacroId,
+      onSwitch: id => {
+        void switchMacro(id);
+      },
       onReorder: reorderMacros,
       onRename: renameMacro,
       onExport: exportMacro,
@@ -213,10 +267,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function reorderMacros(draggedId: string, targetId: string) {
-    const fromIndex = macros.findIndex(x => x.id === draggedId); const toIndex = macros.findIndex(x => x.id === targetId);
+    const fromIndex = macros.findIndex(x => x.id === draggedId);
+    const toIndex = macros.findIndex(x => x.id === targetId);
     if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) return;
-    const [item] = macros.splice(fromIndex, 1); macros.splice(toIndex, 0, item!);
-    localStore.reorder(macros.map(x => x.id)); renderTabs();
+    const [item] = macros.splice(fromIndex, 1);
+    macros.splice(toIndex, 0, item!);
+    localStore.reorder(macros.map(x => x.id));
+    renderTabs();
   }
 
   const macroOptionsBar = document.getElementById('macroOptionsBar');
@@ -224,7 +281,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function renderMacroOptionsBar() {
     if (!macroOptionsBar) return;
     const doc = macros.find(m => m.id === currentMacroId);
-    renderMacroOptions(macroOptionsBar, doc, (activation) => {
+    renderMacroOptions(macroOptionsBar, doc, activation => {
       const i = macros.findIndex(m => m.id === currentMacroId);
       if (i < 0) return;
       const modeChanged = activationOf(macros[i]).mode !== activation.mode;
@@ -238,7 +295,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function applyActivationToStartBlock() {
-    const startBlock = workspace.getBlocksByType('macro_start', false)[0] as Blockly.BlockSvg | undefined;
+    const startBlock = workspace.getBlocksByType('macro_start', false)[0] as
+      Blockly.BlockSvg | undefined;
     const input = startBlock?.getInput('IF');
     if (!startBlock || !input) return;
     const wantsCondition = activationOf(macros.find(m => m.id === currentMacroId)).mode === 'auto';
@@ -252,9 +310,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const i = macros.findIndex(x => x.id === currentMacroId);
     if (i < 0) return;
     try {
-      macros[i] = { ...workspaceToDoc(workspace, macros[i]!), autoclicker: cloneAutoclickerConfig() };
+      macros[i] = {
+        ...workspaceToDoc(workspace, macros[i]!),
+        autoclicker: cloneAutoclickerConfig(),
+      };
       localStore.put(macros[i]!);
-    } catch (e) { console.error('Failed to save macro:', e); }
+    } catch (e) {
+      console.error('Failed to save macro:', e);
+    }
   }
 
   async function applyMacroAutoclicker(doc: MacroDoc) {
@@ -276,7 +339,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     const startBlocks = workspace.getBlocksByType('macro_start', false);
     if (startBlocks.length === 0) {
-      const startBlock = workspace.newBlock('macro_start'); startBlock.setDeletable(false); startBlock.setMovable(false); startBlock.initSvg(); startBlock.render(); startBlock.moveBy(150, 100);
+      const startBlock = workspace.newBlock('macro_start');
+      startBlock.setDeletable(false);
+      startBlock.setMovable(false);
+      startBlock.initSvg();
+      startBlock.render();
+      startBlock.moveBy(150, 100);
     }
     applyActivationToStartBlock();
   }
@@ -288,7 +356,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     saveCurrentWorkspaceToMacro();
 
     currentMacroId = id;
-    loadMacroIntoWorkspace(next); await applyMacroAutoclicker(next);
+    loadMacroIntoWorkspace(next);
+    await applyMacroAutoclicker(next);
 
     rememberCurrentMacro();
     renderTabs();
@@ -298,12 +367,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function renameMacro(macro: MacroDoc) {
     const newName = await promptDialog({
-      title: t('macro.renameTitle'), value: macro.name,
-      validate: (v) => v.trim().length ? null : t('macro.renameEmpty'),
+      title: t('macro.renameTitle'),
+      value: macro.name,
+      validate: v => (v.trim().length ? null : t('macro.renameEmpty')),
     });
     if (newName && newName.trim().length) {
-      macro.name = newName.trim(); macro.updatedAt = Date.now();
-      localStore.put(macro); renderTabs();
+      macro.name = newName.trim();
+      macro.updatedAt = Date.now();
+      localStore.put(macro);
+      renderTabs();
     }
   }
 
@@ -314,14 +386,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function deleteMacro(macro: MacroDoc) {
     const ok = await confirmDialog({
-      title: t('macro.deleteTitle'), body: t('macro.deleteConfirm', { name: macro.name }), danger: true,
+      title: t('macro.deleteTitle'),
+      body: t('macro.deleteConfirm', { name: macro.name }),
+      danger: true,
     });
     if (!ok) return;
     await localStore.remove(macro.id);
-    const idx = macros.findIndex(x => x.id === macro.id); if (idx >= 0) macros.splice(idx, 1);
+    const idx = macros.findIndex(x => x.id === macro.id);
+    if (idx >= 0) macros.splice(idx, 1);
     await ensureDefaultMacro();
     void updateGlobalHotkeys();
-    if (macro.id === currentMacroId && macros[0]) { currentMacroId = macros[0].id; rememberCurrentMacro(); loadMacroIntoWorkspace(macros[0]); }
+    if (macro.id === currentMacroId && macros[0]) {
+      currentMacroId = macros[0].id;
+      rememberCurrentMacro();
+      loadMacroIntoWorkspace(macros[0]);
+    }
     renderTabs();
   }
 
@@ -329,7 +408,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     macros.push(doc);
     await localStore.put(doc);
     void updateGlobalHotkeys();
-    renderTabs(); await switchMacro(doc.id);
+    renderTabs();
+    await switchMacro(doc.id);
   }
 
   async function importMacroFromPath(path: string) {
@@ -341,27 +421,43 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
       const doc = await pickAndReadMacro();
       if (doc) await addImportedMacro(doc);
-    } catch (e) { reportError(e, t('macro.import.invalidTitle')); }
+    } catch (e) {
+      reportError(e, t('macro.import.invalidTitle'));
+    }
   }
 
   addMacroBtn?.addEventListener('click', async () => {
-    const doc = { ...newMacroDoc(genId(), t('macro.numbered', { n: macros.length + 1 })), autoclicker: normalizeAutoclickerConfig({}) };
+    const doc = {
+      ...newMacroDoc(genId(), t('macro.numbered', { n: macros.length + 1 })),
+      autoclicker: normalizeAutoclickerConfig({}),
+    };
     macros.push(doc);
     await localStore.put(doc);
-    renderTabs(); switchMacro(doc.id);
+    renderTabs();
+    switchMacro(doc.id);
   });
-  addMacroBtn?.addEventListener('contextmenu', (e) => { e.preventDefault(); openMenu(e as MouseEvent, [[t('menu.importFromFile'), loadMacroFromFile]]); return false; });
+  addMacroBtn?.addEventListener('contextmenu', e => {
+    e.preventDefault();
+    openMenu(e as MouseEvent, [[t('menu.importFromFile'), loadMacroFromFile]]);
+    return false;
+  });
 
-  await loadMacros(); renderTabs();
+  await loadMacros();
+  renderTabs();
   void updateGlobalHotkeys();
 
   try {
     const pendingPath = await invoke<string | null>('take_pending_open');
     if (pendingPath) await importMacroFromPath(pendingPath);
-  } catch (e) { reportError(e, t('macro.import.invalidTitle')); }
-  await listen<string>('open-macro-file', async (e) => {
-    try { await importMacroFromPath(e.payload); }
-    catch (err) { reportError(err, t('macro.import.invalidTitle')); }
+  } catch (e) {
+    reportError(e, t('macro.import.invalidTitle'));
+  }
+  await listen<string>('open-macro-file', async e => {
+    try {
+      await importMacroFromPath(e.payload);
+    } catch (err) {
+      reportError(err, t('macro.import.invalidTitle'));
+    }
   });
 
   function getCurrentDoc(): MacroDoc | undefined {
@@ -385,7 +481,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function activateMenuButton(btn: HTMLButtonElement) {
-    [editorBtn, variablesBtn, autoclickerBtn, settingsBtn].forEach(b => b?.classList.remove('active'));
+    [editorBtn, variablesBtn, autoclickerBtn, settingsBtn].forEach(b =>
+      b?.classList.remove('active'),
+    );
     btn.classList.add('active');
     if (macroOptionsBar) macroOptionsBar.style.display = currentTab === 'autoclicker' ? 'none' : '';
     updateUIState();
@@ -398,7 +496,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const snapshot = doc ? workspaceToDoc(workspace, doc) : null;
     initBlocks();
     workspace.updateToolbox(buildToolbox());
-    if (doc && snapshot) loadDocIntoWorkspace({ ...doc, blocks: snapshot.blocks, assets: snapshot.assets }, workspace);
+    if (doc && snapshot)
+      loadDocIntoWorkspace({ ...doc, blocks: snapshot.blocks, assets: snapshot.assets }, workspace);
     renderTabs();
     updateUIState();
     if (currentTab === 'settings') showSettingsPanel();
@@ -411,10 +510,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     setPanelTitle(t('panel.settings'));
     showPanel('full', { header: false });
     const content = panelContent();
-    if (content) renderSettings(content, {
-      onThemeChange: () => workspace.setTheme(resolveThemeMode() === 'light' ? asmacroThemeLight : asmacroTheme),
-      onLanguageChange: reloadLanguageUI,
-    });
+    if (content)
+      renderSettings(content, {
+        onThemeChange: () =>
+          workspace.setTheme(resolveThemeMode() === 'light' ? asmacroThemeLight : asmacroTheme),
+        onLanguageChange: reloadLanguageUI,
+      });
   }
 
   function showAutoclickerPanel() {
@@ -428,52 +529,71 @@ document.addEventListener('DOMContentLoaded', async () => {
     setPanelTitle(t('panel.variables'));
     showPanel('dock');
     const content = panelContent();
-    if (content) renderVariables(content, {
-      workspace,
-      getConfig: () => getCurrentDoc()?.variables ?? {},
-      setConfig: setVarConfig,
-      removeConfig: removeVarConfig,
-      isRunning: () => !isStopped(),
-      exportToFile: (json) => exportVariablesToFile(json, getCurrentDoc()?.name),
-      importFromFile: importVariablesFromFile,
-    });
+    if (content)
+      renderVariables(content, {
+        workspace,
+        getConfig: () => getCurrentDoc()?.variables ?? {},
+        setConfig: setVarConfig,
+        removeConfig: removeVarConfig,
+        isRunning: () => !isStopped(),
+        exportToFile: json => exportVariablesToFile(json, getCurrentDoc()?.name),
+        importFromFile: importVariablesFromFile,
+      });
   }
 
   function goToEditor(hide: boolean) {
-    if (hide) { hidePanel(); currentSelectedId = null; }
+    if (hide) {
+      hidePanel();
+      currentSelectedId = null;
+    }
     disposeVariablesPanel();
     disposeAutoclickerPanel();
-    currentTab = 'editor'; activateMenuButton(editorBtn);
+    currentTab = 'editor';
+    activateMenuButton(editorBtn);
     setPanelTitle(t('panel.properties'));
   }
 
   editorBtn?.addEventListener('click', () => {
-      goToEditor(false);
-      if (currentSelectedId) { const block = workspace.getBlockById(currentSelectedId); if (block) { block.unselect(); block.select(); } }
-      else { hidePanel(); }
+    goToEditor(false);
+    if (currentSelectedId) {
+      const block = workspace.getBlockById(currentSelectedId);
+      if (block) {
+        block.unselect();
+        block.select();
+      }
+    } else {
+      hidePanel();
+    }
   });
 
   variablesBtn?.addEventListener('click', () => {
-      currentTab = 'variables'; activateMenuButton(variablesBtn);
-      disposeAutoclickerPanel();
-      showVariablesPanel();
+    currentTab = 'variables';
+    activateMenuButton(variablesBtn);
+    disposeAutoclickerPanel();
+    showVariablesPanel();
   });
 
   autoclickerBtn?.addEventListener('click', () => {
-      currentTab = 'autoclicker'; activateMenuButton(autoclickerBtn);
-      disposeVariablesPanel();
-      showAutoclickerPanel();
+    currentTab = 'autoclicker';
+    activateMenuButton(autoclickerBtn);
+    disposeVariablesPanel();
+    showAutoclickerPanel();
   });
 
   settingsBtn?.addEventListener('click', () => {
-      currentTab = 'settings'; activateMenuButton(settingsBtn);
-      disposeVariablesPanel();
-      disposeAutoclickerPanel();
-      showSettingsPanel();
+    currentTab = 'settings';
+    activateMenuButton(settingsBtn);
+    disposeVariablesPanel();
+    disposeAutoclickerPanel();
+    showSettingsPanel();
   });
 
   const workspace = Blockly.inject(blocklyDiv, {
-    toolbox: buildToolbox(), trashcan: true, media: 'blockly-media/', theme: resolveThemeMode() === 'light' ? asmacroThemeLight : asmacroTheme, renderer: 'zelos',
+    toolbox: buildToolbox(),
+    trashcan: true,
+    media: 'blockly-media/',
+    theme: resolveThemeMode() === 'light' ? asmacroThemeLight : asmacroTheme,
+    renderer: 'zelos',
     grid: { spacing: 28, length: 1, colour: '#1c1c1c', snap: true },
     zoom: { controls: true, wheel: true, startScale: 0.95, maxScale: 2, minScale: 0.5 },
     move: { scrollbars: true, drag: true, wheel: true },
@@ -485,7 +605,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   new ResizeObserver(() => Blockly.svgResize(workspace)).observe(blocklyWrapper);
 
-  [kbModal, mouseModal].forEach(m => m?.addEventListener('click', (e) => { if(e.target === m) m.classList.add('hidden'); }));
+  [kbModal, mouseModal].forEach(m =>
+    m?.addEventListener('click', e => {
+      if (e.target === m) m.classList.add('hidden');
+    }),
+  );
 
   workspace.addChangeListener((event: Blockly.Events.Abstract) => {
     if (event.type === Blockly.Events.BLOCK_CREATE) {
@@ -494,8 +618,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!customIdMap.has(internalId)) customIdMap.set(internalId, nextBlockId++);
         const block = workspace.getBlockById(internalId);
         if (block && !block.data) {
-            const schema = blockSchemas[block.type] || []; const blockData: any = {};
-            schema.forEach(s => blockData[s.name] = s.default); block.data = JSON.stringify(blockData);
+          const schema = blockSchemas[block.type] || [];
+          const blockData: any = {};
+          schema.forEach(s => (blockData[s.name] = s.default));
+          block.data = JSON.stringify(blockData);
         }
       });
     }
@@ -521,7 +647,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (block) {
           showPanel('dock');
           const content = panelContent();
-          if (content) renderProperties(content, block, { workspace, kbModal, mouseModal, customIdMap });
+          if (content)
+            renderProperties(content, block, { workspace, kbModal, mouseModal, customIdMap });
         }
       }
     }
@@ -529,21 +656,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (event.type === Blockly.Events.VAR_CREATE) {
       const createEvent = event as Blockly.Events.VarCreate;
       const doc = getCurrentDoc();
-      if (doc && createEvent.varId && !doc.variables[createEvent.varId]) setVarConfig(createEvent.varId, defaultConfig('number'));
+      if (doc && createEvent.varId && !doc.variables[createEvent.varId])
+        setVarConfig(createEvent.varId, defaultConfig('number'));
     }
 
-    if (event.type === Blockly.Events.VAR_CREATE || event.type === Blockly.Events.VAR_DELETE || event.type === Blockly.Events.VAR_RENAME) {
+    if (
+      event.type === Blockly.Events.VAR_CREATE ||
+      event.type === Blockly.Events.VAR_DELETE ||
+      event.type === Blockly.Events.VAR_RENAME
+    ) {
       if (currentTab === 'variables') showVariablesPanel();
     }
   });
 
   const initialMacro = macros.find(x => x.id === currentMacroId);
-  if (initialMacro) { loadMacroIntoWorkspace(initialMacro); void applyMacroAutoclicker(initialMacro); }
+  if (initialMacro) {
+    loadMacroIntoWorkspace(initialMacro);
+    void applyMacroAutoclicker(initialMacro);
+  }
   rememberCurrentMacro();
 
   const scheduleSave = () => {
     clearTimeout(autoSaveTimer);
-    autoSaveTimer = window.setTimeout(() => { saveCurrentWorkspaceToMacro(); }, 400);
+    autoSaveTimer = window.setTimeout(() => {
+      saveCurrentWorkspaceToMacro();
+    }, 400);
   };
   workspace.addChangeListener((event: Blockly.Events.Abstract) => {
     if (event.isUiEvent) return;
@@ -573,62 +710,117 @@ document.addEventListener('DOMContentLoaded', async () => {
       (stopBtn as HTMLButtonElement).disabled = locked && state === 'STOPPED';
     }
     (runBtn as HTMLButtonElement).disabled = locked && state === 'STOPPED';
-    if (state === 'STOPPED') { macroStateDiv.classList.add('stopped'); stateText.innerText = t('state.stopped'); paintButtonWithHotkey(runBtn, t('state.run'), keys?.start ?? ''); runBtn.classList.remove('btn-pause'); }
-    else if (state === 'RUNNING') { macroStateDiv.classList.add('running'); stateText.innerText = t('state.running'); paintButtonWithHotkey(runBtn, t('state.pause'), keys?.start ?? ''); runBtn.classList.add('btn-pause'); }
-    else if (state === 'PAUSED') { macroStateDiv.classList.add('paused'); stateText.innerText = t('state.paused'); paintButtonWithHotkey(runBtn, t('state.resume'), keys?.start ?? ''); runBtn.classList.remove('btn-pause'); }
+    if (state === 'STOPPED') {
+      macroStateDiv.classList.add('stopped');
+      stateText.innerText = t('state.stopped');
+      paintButtonWithHotkey(runBtn, t('state.run'), keys?.start ?? '');
+      runBtn.classList.remove('btn-pause');
+    } else if (state === 'RUNNING') {
+      macroStateDiv.classList.add('running');
+      stateText.innerText = t('state.running');
+      paintButtonWithHotkey(runBtn, t('state.pause'), keys?.start ?? '');
+      runBtn.classList.add('btn-pause');
+    } else if (state === 'PAUSED') {
+      macroStateDiv.classList.add('paused');
+      stateText.innerText = t('state.paused');
+      paintButtonWithHotkey(runBtn, t('state.resume'), keys?.start ?? '');
+      runBtn.classList.remove('btn-pause');
+    }
   }
 
   updateUIState();
 
   async function abortBackend() {
-    try { await invoke('set_abort', { value: true }); } catch (e) {}
-    try { await invoke('release_all_inputs'); } catch (e) {}
+    try {
+      await invoke('set_abort', { value: true });
+    } catch (e) {}
+    try {
+      await invoke('release_all_inputs');
+    } catch (e) {}
   }
 
   let windowHiddenForRun = false;
   async function applyWindowOnRun() {
     const win = getCurrentWindow();
     try {
-      if (settings.windowOnRun === 'minimize') { await win.minimize(); windowHiddenForRun = true; }
-      else if (settings.windowOnRun === 'hide') { await win.hide(); windowHiddenForRun = true; }
+      if (settings.windowOnRun === 'minimize') {
+        await win.minimize();
+        windowHiddenForRun = true;
+      } else if (settings.windowOnRun === 'hide') {
+        await win.hide();
+        windowHiddenForRun = true;
+      }
     } catch (e) {}
   }
   async function restoreWindowAfterRun() {
     if (!windowHiddenForRun) return;
     windowHiddenForRun = false;
     const win = getCurrentWindow();
-    try { await win.show(); await win.unminimize(); } catch (e) {}
+    try {
+      await win.show();
+      await win.unminimize();
+    } catch (e) {}
   }
 
   async function finishRun() {
     if (currentTab === 'variables') showVariablesPanel();
     await abortBackend();
-    try { await invoke('set_macro_running', { value: false }); } catch (e) {}
+    try {
+      await invoke('set_macro_running', { value: false });
+    } catch (e) {}
     await restoreWindowAfterRun();
   }
 
   let lastRunToggleTime = 0;
-  runBtn?.addEventListener('click', () => { void toggleRun(); });
+  runBtn?.addEventListener('click', () => {
+    void toggleRun();
+  });
   async function toggleRun() {
-    const now = Date.now(); if (now - lastRunToggleTime < 500) return; lastRunToggleTime = now;
-    if (interpreterState.executionState === 'RUNNING') { interpreterState.executionState = 'PAUSED'; updateUIState(); return; }
-    if (interpreterState.executionState === 'PAUSED') { interpreterState.executionState = 'RUNNING'; updateUIState(); return; }
+    const now = Date.now();
+    if (now - lastRunToggleTime < 500) return;
+    lastRunToggleTime = now;
+    if (interpreterState.executionState === 'RUNNING') {
+      interpreterState.executionState = 'PAUSED';
+      updateUIState();
+      return;
+    }
+    if (interpreterState.executionState === 'PAUSED') {
+      interpreterState.executionState = 'RUNNING';
+      updateUIState();
+      return;
+    }
 
-    const startBlocks = workspace.getBlocksByType('macro_start', false); if (startBlocks.length === 0) return;
-    if (isAutoclickerRunning()) { reportError(t('run.stopAutoclickerFirst'), t('run.cannotRun')); return; }
+    const startBlocks = workspace.getBlocksByType('macro_start', false);
+    if (startBlocks.length === 0) return;
+    if (isAutoclickerRunning()) {
+      reportError(t('run.stopAutoclickerFirst'), t('run.cannotRun'));
+      return;
+    }
 
-    try { await invoke('set_abort', { value: false }); } catch (e) {}
-    try { await invoke('reset_vision_caches'); } catch (e) {}
-    try { await invoke('set_macro_running', { value: true }); } catch (e) {}
+    try {
+      await invoke('set_abort', { value: false });
+    } catch (e) {}
+    try {
+      await invoke('reset_vision_caches');
+    } catch (e) {}
+    try {
+      await invoke('set_macro_running', { value: true });
+    } catch (e) {}
     await applySettingsToBackend();
     const currentDoc = macros.find(m => m.id === currentMacroId);
     vars.reset(workspace, currentDoc?.variables ?? {});
-    interpreterState.executionState = 'RUNNING'; interpreterState.actionErrorReported = false; updateUIState();
+    interpreterState.executionState = 'RUNNING';
+    interpreterState.actionErrorReported = false;
+    updateUIState();
     if (currentTab === 'variables') showVariablesPanel();
     await applyWindowOnRun();
     await executeBlocks(startBlocks[0]!.getNextBlock(), workspace);
 
-    if (!isStopped()) { interpreterState.executionState = 'STOPPED'; workspace.highlightBlock(null); updateUIState(); }
+    if (!isStopped()) {
+      interpreterState.executionState = 'STOPPED';
+      workspace.highlightBlock(null);
+      updateUIState();
+    }
     await finishRun();
   }
 
@@ -639,9 +831,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     runMacroById,
   });
 
-  stopBtn?.addEventListener('click', () => { void stopRun(); });
+  stopBtn?.addEventListener('click', () => {
+    void stopRun();
+  });
   async function stopRun() {
-    interpreterState.executionState = 'STOPPED'; workspace.highlightBlock(null); updateUIState();
+    interpreterState.executionState = 'STOPPED';
+    workspace.highlightBlock(null);
+    updateUIState();
     await finishRun();
   }
 });

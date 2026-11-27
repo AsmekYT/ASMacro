@@ -26,11 +26,19 @@ export function createValueEditor(opts: ValueEditorOptions): HTMLElement {
     textarea.value = formatValue(value, type);
     textarea.disabled = !!disabled;
     const checkValid = () => {
-      try { JSON.parse(textarea.value); textarea.classList.remove('invalid'); return true; }
-      catch (e) { textarea.classList.add('invalid'); return false; }
+      try {
+        JSON.parse(textarea.value);
+        textarea.classList.remove('invalid');
+        return true;
+      } catch (e) {
+        textarea.classList.add('invalid');
+        return false;
+      }
     };
     textarea.addEventListener('input', checkValid);
-    textarea.addEventListener('change', () => { if (checkValid()) onCommit(parseText(textarea.value, type)); });
+    textarea.addEventListener('change', () => {
+      if (checkValid()) onCommit(parseText(textarea.value, type));
+    });
     return textarea;
   }
 

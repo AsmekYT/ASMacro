@@ -1,10 +1,17 @@
 import { panelHtml } from './template';
 import {
-  autoclicker, saveAutoclickerConfig,
-  updateAutoclickerConfig, applyAutoclickerHotkey, getAutoclickerStatus,
-  isAutoclickerRunning, onAutoclickerRunningChange,
-  effectiveCps, MAX_CPS,
-  type FrequencyUnit, type MouseButton, type Activation,
+  autoclicker,
+  saveAutoclickerConfig,
+  updateAutoclickerConfig,
+  applyAutoclickerHotkey,
+  getAutoclickerStatus,
+  isAutoclickerRunning,
+  onAutoclickerRunningChange,
+  effectiveCps,
+  MAX_CPS,
+  type FrequencyUnit,
+  type MouseButton,
+  type Activation,
 } from '../../autoclicker';
 import { renderPointsCard } from './points';
 import { showOverlayFor, hideClickOverlay } from '../clickOverlay';
@@ -20,8 +27,11 @@ let unsubscribeRunning: (() => void) | null = null;
 const unitLabelKey = (u: FrequencyUnit) => t(`ac.unit.${u}`);
 
 const BUTTON_KEYS: Record<MouseButton, string> = {
-  LEFT: 'key.mouseLeft', RIGHT: 'key.mouseRight', MIDDLE: 'key.mouseMiddle',
-  BACK: 'key.mouseBack', FORWARD: 'key.mouseForward',
+  LEFT: 'key.mouseLeft',
+  RIGHT: 'key.mouseRight',
+  MIDDLE: 'key.mouseMiddle',
+  BACK: 'key.mouseBack',
+  FORWARD: 'key.mouseForward',
 };
 
 const buttonLabel = (b: MouseButton) => t(BUTTON_KEYS[b] ?? 'key.mouseLeft');
@@ -67,21 +77,24 @@ export function renderAutoclicker(container: HTMLElement) {
 
   const refreshOverlay = () => showOverlayFor(c);
 
-  const targetLabel = () => c.targetKind === 'mouse'
-    ? t('ac.button', { button: buttonLabel(c.button) })
-    : keyLabel(c.key);
+  const targetLabel = () =>
+    c.targetKind === 'mouse' ? t('ac.button', { button: buttonLabel(c.button) }) : keyLabel(c.key);
 
   const paintSummary = () => {
     const target = targetLabel();
     const { min, max } = effectiveCps(c);
-    const rate = min === max
-      ? t('ac.rateShort', { rate: fmtRate(min) })
-      : t('ac.rateRangeShort', { min: fmtRate(min), max: fmtRate(max) });
-    const where = c.positionMode === 'fixed'
-      ? t('ac.where.fixed', { x: Math.round(c.posX), y: Math.round(c.posY) })
-      : c.positionMode === 'sequence'
-        ? (c.points.length ? t('ac.where.sequence', { count: c.points.length }) : t('ac.where.noPoints'))
-        : t('ac.where.cursor');
+    const rate =
+      min === max
+        ? t('ac.rateShort', { rate: fmtRate(min) })
+        : t('ac.rateRangeShort', { min: fmtRate(min), max: fmtRate(max) });
+    const where =
+      c.positionMode === 'fixed'
+        ? t('ac.where.fixed', { x: Math.round(c.posX), y: Math.round(c.posY) })
+        : c.positionMode === 'sequence'
+          ? c.points.length
+            ? t('ac.where.sequence', { count: c.points.length })
+            : t('ac.where.noPoints')
+          : t('ac.where.cursor');
 
     const parts = [t('ac.summary', { target, rate, where })];
     if (max >= MAX_CPS) parts.push(t('ac.summaryClamped', { max: MAX_CPS }));
@@ -97,11 +110,13 @@ export function renderAutoclicker(container: HTMLElement) {
   const renderPreview = () => {
     previewEl.innerHTML = '';
     if (c.targetKind === 'mouse') {
-      previewEl.appendChild(createMousePicker(c.button, (v) => {
-        c.button = v as MouseButton;
-        paintPicked();
-        persist();
-      }));
+      previewEl.appendChild(
+        createMousePicker(c.button, v => {
+          c.button = v as MouseButton;
+          paintPicked();
+          persist();
+        }),
+      );
     } else {
       const cap = document.createElement('button');
       cap.type = 'button';
@@ -109,7 +124,7 @@ export function renderAutoclicker(container: HTMLElement) {
       cap.title = t('ac.change');
       cap.textContent = keyLabel(c.key);
       cap.addEventListener('click', () => {
-        openKeyboardModal(document.getElementById('keyboardModal'), c.key, (key) => {
+        openKeyboardModal(document.getElementById('keyboardModal'), c.key, key => {
           c.key = key;
           cap.textContent = keyLabel(key);
           paintPicked();
@@ -125,7 +140,9 @@ export function renderAutoclicker(container: HTMLElement) {
     const fixed = c.positionMode === 'fixed';
     byId<HTMLSelectElement>('acPositionMode').disabled = c.positionMode === 'sequence';
     byId('acFixedPosGroup').classList.toggle('off', !fixed);
-    ['acPosX', 'acPosY', 'acUseCurrentPos'].forEach(id => { byId<HTMLInputElement>(id).disabled = !fixed; });
+    ['acPosX', 'acPosY', 'acUseCurrentPos'].forEach(id => {
+      byId<HTMLInputElement>(id).disabled = !fixed;
+    });
     byId('acMarkersRow').classList.toggle('off', !fixed);
     byId<HTMLInputElement>('acShowMarkers').disabled = !fixed;
     byId('acPointMarkersRow').classList.toggle('off', c.positionMode !== 'sequence');
@@ -133,7 +150,9 @@ export function renderAutoclicker(container: HTMLElement) {
     byId<HTMLInputElement>('acUseSequence').checked = c.positionMode === 'sequence';
   };
 
-  const paintHotkeyWarn = () => { hotkeyWarn.style.display = c.hotkey.trigger ? 'none' : ''; };
+  const paintHotkeyWarn = () => {
+    hotkeyWarn.style.display = c.hotkey.trigger ? 'none' : '';
+  };
 
   const paintRunning = (running: boolean) => {
     consoleEl.dataset.state = running ? 'running' : 'stopped';
@@ -160,56 +179,99 @@ export function renderAutoclicker(container: HTMLElement) {
   toggle('acEdgeGroup', c.edgeStop);
   toggle('acEdgeCornersGroup', c.edgeStop);
 
-  const segButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('#acTargetKind .seg-btn'));
-  segButtons.forEach(btn => btn.addEventListener('click', () => {
-    c.targetKind = btn.dataset.val as typeof c.targetKind;
-    segButtons.forEach(b => b.classList.toggle('selected', b === btn));
-    paintPicked();
-    renderPreview();
-    persist();
-  }));
+  const segButtons = Array.from(
+    document.querySelectorAll<HTMLButtonElement>('#acTargetKind .seg-btn'),
+  );
+  segButtons.forEach(btn =>
+    btn.addEventListener('click', () => {
+      c.targetKind = btn.dataset.val as typeof c.targetKind;
+      segButtons.forEach(b => b.classList.toggle('selected', b === btn));
+      paintPicked();
+      renderPreview();
+      persist();
+    }),
+  );
 
-  bindCheck('acCaseSensitive', v => c.caseSensitive = v, persist);
+  bindCheck('acCaseSensitive', v => (c.caseSensitive = v), persist);
 
-  bindCheck('acRandomRate', v => {
-    c.randomRate = v;
-    toggle('acFixedRateGroup', !v);
-    toggle('acRandomRateGroup', v);
-  }, persist);
-  bindNumber('acRate', v => c.rate = Math.min(MAX_CPS * 86400, Math.max(0.01, v)), persist);
-  bindNumber('acRateMin', v => c.rateMin = Math.max(0.01, v), persist);
-  bindNumber('acRateMax', v => c.rateMax = Math.max(0.01, v), persist);
-  bindSelect('acUnit', v => { c.unit = v as FrequencyUnit; setUnitLabels(); }, persist);
+  bindCheck(
+    'acRandomRate',
+    v => {
+      c.randomRate = v;
+      toggle('acFixedRateGroup', !v);
+      toggle('acRandomRateGroup', v);
+    },
+    persist,
+  );
+  bindNumber('acRate', v => (c.rate = Math.min(MAX_CPS * 86400, Math.max(0.01, v))), persist);
+  bindNumber('acRateMin', v => (c.rateMin = Math.max(0.01, v)), persist);
+  bindNumber('acRateMax', v => (c.rateMax = Math.max(0.01, v)), persist);
+  bindSelect(
+    'acUnit',
+    v => {
+      c.unit = v as FrequencyUnit;
+      setUnitLabels();
+    },
+    persist,
+  );
 
-  bindSelect('acActivation', v => c.activation = v as Activation, persist);
+  bindSelect('acActivation', v => (c.activation = v as Activation), persist);
 
   bindAutoclickerHotkeyButton(
     'acHotkeyBtn',
     () => c.hotkey,
-    (h) => { c.hotkey = h; saveAutoclickerConfig(); paintHotkeyWarn(); },
-    async () => { await applyAutoclickerHotkey(); },
+    h => {
+      c.hotkey = h;
+      saveAutoclickerConfig();
+      paintHotkeyWarn();
+    },
+    async () => {
+      await applyAutoclickerHotkey();
+    },
   );
 
-  byId<HTMLDetailsElement>('acAdvanced').addEventListener('toggle', (e) => {
+  byId<HTMLDetailsElement>('acAdvanced').addEventListener('toggle', e => {
     c.advanced = (e.target as HTMLDetailsElement).open;
     saveAutoclickerConfig();
   });
 
-  bindCheck('acDutyCycle', v => { c.dutyCycle = v; toggle('acDutyCycleGroup', v); }, persist);
-  bindNumber('acHoldMin', v => c.holdMinMs = Math.max(0, v), persist);
-  bindNumber('acHoldMax', v => c.holdMaxMs = Math.max(0, v), persist);
-  bindCheck('acDoubleClick', v => { c.doubleClick = v; toggle('acDoubleGapGroup', v); }, persist);
-  bindNumber('acDoubleGap', v => c.doubleGapMs = Math.max(0, v), persist);
+  bindCheck(
+    'acDutyCycle',
+    v => {
+      c.dutyCycle = v;
+      toggle('acDutyCycleGroup', v);
+    },
+    persist,
+  );
+  bindNumber('acHoldMin', v => (c.holdMinMs = Math.max(0, v)), persist);
+  bindNumber('acHoldMax', v => (c.holdMaxMs = Math.max(0, v)), persist);
+  bindCheck(
+    'acDoubleClick',
+    v => {
+      c.doubleClick = v;
+      toggle('acDoubleGapGroup', v);
+    },
+    persist,
+  );
+  bindNumber('acDoubleGap', v => (c.doubleGapMs = Math.max(0, v)), persist);
 
-  bindSelect('acPositionMode', v => { c.positionMode = c.basePositionMode = v as 'cursor' | 'fixed'; paintPositionRows(); }, persist);
-  bindCheck('acShowMarkers', v => c.showMarkers = v, persist);
-  bindCheck('acShowPointMarkers', v => c.showPointMarkers = v, persist);
-  bindNumber('acPosX', v => c.posX = Math.round(v), persist);
-  bindNumber('acPosY', v => c.posY = Math.round(v), persist);
+  bindSelect(
+    'acPositionMode',
+    v => {
+      c.positionMode = c.basePositionMode = v as 'cursor' | 'fixed';
+      paintPositionRows();
+    },
+    persist,
+  );
+  bindCheck('acShowMarkers', v => (c.showMarkers = v), persist);
+  bindCheck('acShowPointMarkers', v => (c.showPointMarkers = v), persist);
+  bindNumber('acPosX', v => (c.posX = Math.round(v)), persist);
+  bindNumber('acPosY', v => (c.posY = Math.round(v)), persist);
   byId('acUseCurrentPos').addEventListener('click', async () => {
     try {
       const [x, y] = await getMousePos();
-      c.posX = x; c.posY = y;
+      c.posX = x;
+      c.posY = y;
       byId<HTMLInputElement>('acPosX').value = String(x);
       byId<HTMLInputElement>('acPosY').value = String(y);
       persist();
@@ -220,16 +282,20 @@ export function renderAutoclicker(container: HTMLElement) {
   paintSummary();
   void refreshOverlay();
 
-  bindNumber('acLimitClicks', v => c.limitClicks = Math.max(0, Math.round(v)), persist);
-  bindNumber('acLimitSeconds', v => c.limitSeconds = Math.max(0, Math.round(v)), persist);
+  bindNumber('acLimitClicks', v => (c.limitClicks = Math.max(0, Math.round(v))), persist);
+  bindNumber('acLimitSeconds', v => (c.limitSeconds = Math.max(0, Math.round(v))), persist);
 
-  bindCheck('acEdgeStop', v => {
-    c.edgeStop = v;
-    toggle('acEdgeGroup', v);
-    toggle('acEdgeCornersGroup', v);
-  }, persist);
-  bindNumber('acEdgeMargin', v => c.edgeMarginPx = Math.max(1, Math.round(v)), persist);
-  bindCheck('acEdgeCorners', v => c.edgeCornersOnly = v, persist);
+  bindCheck(
+    'acEdgeStop',
+    v => {
+      c.edgeStop = v;
+      toggle('acEdgeGroup', v);
+      toggle('acEdgeCornersGroup', v);
+    },
+    persist,
+  );
+  bindNumber('acEdgeMargin', v => (c.edgeMarginPx = Math.max(1, Math.round(v))), persist);
+  bindCheck('acEdgeCorners', v => (c.edgeCornersOnly = v), persist);
 
   hotkeyWarn.addEventListener('click', () => byId('acHotkeyBtn').click());
 
@@ -250,6 +316,12 @@ export function renderAutoclicker(container: HTMLElement) {
 
 export function disposeAutoclickerPanel() {
   if (!isAutoclickerRunning()) void hideClickOverlay();
-  if (statusTimer) { clearInterval(statusTimer); statusTimer = null; }
-  if (unsubscribeRunning) { unsubscribeRunning(); unsubscribeRunning = null; }
+  if (statusTimer) {
+    clearInterval(statusTimer);
+    statusTimer = null;
+  }
+  if (unsubscribeRunning) {
+    unsubscribeRunning();
+    unsubscribeRunning = null;
+  }
 }

@@ -29,8 +29,14 @@ export async function getPlatformCapabilities(): Promise<PlatformCapabilities> {
   if (cached) return cached;
   if (!pending) {
     pending = invoke<PlatformCapabilities>('platform_capabilities')
-      .then((r) => { cached = r; return r; })
-      .catch(() => { cached = FALLBACK; return FALLBACK; });
+      .then(r => {
+        cached = r;
+        return r;
+      })
+      .catch(() => {
+        cached = FALLBACK;
+        return FALLBACK;
+      });
   }
   return pending;
 }

@@ -2,14 +2,19 @@ import { t } from '../i18n';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { reportError } from './toast';
 import {
-  RELEASES_URL, runUpdate, dismissUpdateForSession, formatBytes,
-  type UpdateCheck, type DownloadProgress,
+  RELEASES_URL,
+  runUpdate,
+  dismissUpdateForSession,
+  formatBytes,
+  type UpdateCheck,
+  type DownloadProgress,
 } from '../update';
 
 export function escapeHtml(s: string): string {
-  return s.replace(/[&<>"']/g, (c) => (
-    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string
-  ));
+  return s.replace(
+    /[&<>"']/g,
+    c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] as string,
+  );
 }
 
 function notesHtml(notes: string | undefined): string {
@@ -36,7 +41,7 @@ function buildCard(): Card {
 }
 
 function showSelfUpdateModal(check: Extract<UpdateCheck, { kind: 'ready' }>): Promise<void> {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     const { overlay, card, close } = buildCard();
     const version = escapeHtml(check.update.version);
 
@@ -104,9 +109,14 @@ function showSelfUpdateModal(check: Extract<UpdateCheck, { kind: 'ready' }>): Pr
     });
 
     laterBtn.addEventListener('click', cancel);
-    overlay.addEventListener('mousedown', (e) => { if (e.target === overlay) cancel(); });
-    overlay.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') { e.preventDefault(); cancel(); }
+    overlay.addEventListener('mousedown', e => {
+      if (e.target === overlay) cancel();
+    });
+    overlay.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        cancel();
+      }
     });
 
     installBtn.focus();
@@ -114,7 +124,7 @@ function showSelfUpdateModal(check: Extract<UpdateCheck, { kind: 'ready' }>): Pr
 }
 
 function showManualUpdateModal(check: Extract<UpdateCheck, { kind: 'manual' }>): Promise<void> {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     const { overlay, card, close } = buildCard();
 
     card.innerHTML = `
@@ -133,16 +143,25 @@ function showManualUpdateModal(check: Extract<UpdateCheck, { kind: 'manual' }>):
     const laterBtn = card.querySelector<HTMLButtonElement>('#updLater')!;
     const openBtn = card.querySelector<HTMLButtonElement>('#updOpen')!;
 
-    const finish = () => { dismissUpdateForSession(); close(); resolve(); };
+    const finish = () => {
+      dismissUpdateForSession();
+      close();
+      resolve();
+    };
 
     openBtn.addEventListener('click', () => {
       openUrl(RELEASES_URL).catch(e => reportError(e, t('update.openFailed')));
       finish();
     });
     laterBtn.addEventListener('click', finish);
-    overlay.addEventListener('mousedown', (e) => { if (e.target === overlay) finish(); });
-    overlay.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') { e.preventDefault(); finish(); }
+    overlay.addEventListener('mousedown', e => {
+      if (e.target === overlay) finish();
+    });
+    overlay.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        finish();
+      }
     });
 
     openBtn.focus();

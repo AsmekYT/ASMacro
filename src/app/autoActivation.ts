@@ -11,7 +11,12 @@ type AutoActivationDeps = {
   runMacroById: (id: string, delayMs: number) => Promise<void>;
 };
 
-export function startAutoActivation({ workspace, getMacros, getCurrentId, runMacroById }: AutoActivationDeps) {
+export function startAutoActivation({
+  workspace,
+  getMacros,
+  getCurrentId,
+  runMacroById,
+}: AutoActivationDeps) {
   const AUTO_POLL_MS = 500;
   let autoCheckInFlight = false;
 
@@ -39,9 +44,10 @@ export function startAutoActivation({ workspace, getMacros, getCurrentId, runMac
     if (autoCheckInFlight) return;
     if (interpreterState.executionState !== 'STOPPED' || isAutoclickerRunning()) return;
 
-    const watched = settings.autoActivationScope === 'all'
-      ? getMacros()
-      : getMacros().filter(m => m.id === getCurrentId());
+    const watched =
+      settings.autoActivationScope === 'all'
+        ? getMacros()
+        : getMacros().filter(m => m.id === getCurrentId());
 
     autoCheckInFlight = true;
     try {

@@ -12,7 +12,10 @@ type PointsDeps = {
   refreshOverlay: () => Promise<void>;
 };
 
-export function renderPointsCard(c: AutoclickerConfig, { persist, paintPositionRows, refreshOverlay }: PointsDeps) {
+export function renderPointsCard(
+  c: AutoclickerConfig,
+  { persist, paintPositionRows, refreshOverlay }: PointsDeps,
+) {
   const byId = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
   const pointList = byId('acPointList');
@@ -23,14 +26,16 @@ export function renderPointsCard(c: AutoclickerConfig, { persist, paintPositionR
   let screens: ScreenInfo[] = [];
 
   const screenOf = (p?: ClickPoint) =>
-    (p && screens.find(s => p.x >= s.x && p.x < s.x + s.w && p.y >= s.y && p.y < s.y + s.h))
-    || screens.find(s => s.is_primary) || screens[0];
+    (p && screens.find(s => p.x >= s.x && p.x < s.x + s.w && p.y >= s.y && p.y < s.y + s.h)) ||
+    screens.find(s => s.is_primary) ||
+    screens[0];
 
   const mapBounds = () => {
     if (mapScreenEl.value === 'all' || !screens.length) return allScreens;
-    const s = mapScreenEl.value === 'auto'
-      ? screenOf(c.points[0])
-      : screens.find(x => String(x.index) === mapScreenEl.value) || screenOf(c.points[0]);
+    const s =
+      mapScreenEl.value === 'auto'
+        ? screenOf(c.points[0])
+        : screens.find(x => String(x.index) === mapScreenEl.value) || screenOf(c.points[0]);
     return s ? { x: s.x, y: s.y, w: s.w, h: s.h } : allScreens;
   };
 
@@ -59,26 +64,35 @@ export function renderPointsCard(c: AutoclickerConfig, { persist, paintPositionR
     });
   };
 
-  virtualBounds().then(b => { if (b.w > 0 && b.h > 0) { allScreens = b; renderMap(); } }).catch(() => {});
-  listScreens().then(list => {
-    screens = list;
-    if (screens.length < 2) return;
-    mapScreenEl.classList.remove('hidden');
-    mapScreenEl.replaceChildren();
-    const options: [string, string][] = [
-      ['auto', t('ac.mapScreenAuto')],
-      ...screens.map(s => [String(s.index), screenLabel(s)] as [string, string]),
-      ['all', t('ac.mapScreenAll')],
-    ];
-    for (const [value, label] of options) {
-      const opt = document.createElement('option');
-      opt.value = value;
-      opt.textContent = label;
-      mapScreenEl.appendChild(opt);
-    }
-    if (options.some(([value]) => value === c.mapScreen)) mapScreenEl.value = c.mapScreen;
-    renderMap();
-  }).catch(() => {});
+  virtualBounds()
+    .then(b => {
+      if (b.w > 0 && b.h > 0) {
+        allScreens = b;
+        renderMap();
+      }
+    })
+    .catch(() => {});
+  listScreens()
+    .then(list => {
+      screens = list;
+      if (screens.length < 2) return;
+      mapScreenEl.classList.remove('hidden');
+      mapScreenEl.replaceChildren();
+      const options: [string, string][] = [
+        ['auto', t('ac.mapScreenAuto')],
+        ...screens.map(s => [String(s.index), screenLabel(s)] as [string, string]),
+        ['all', t('ac.mapScreenAll')],
+      ];
+      for (const [value, label] of options) {
+        const opt = document.createElement('option');
+        opt.value = value;
+        opt.textContent = label;
+        mapScreenEl.appendChild(opt);
+      }
+      if (options.some(([value]) => value === c.mapScreen)) mapScreenEl.value = c.mapScreen;
+      renderMap();
+    })
+    .catch(() => {});
   mapScreenEl.addEventListener('change', () => {
     c.mapScreen = mapScreenEl.value;
     renderMap();
@@ -112,7 +126,8 @@ export function renderPointsCard(c: AutoclickerConfig, { persist, paintPositionR
         input.addEventListener('change', () => {
           const v = Math.round(Number(input.value));
           if (!Number.isFinite(v)) return;
-          if (input.dataset.axis === 'x') p.x = v; else p.y = v;
+          if (input.dataset.axis === 'x') p.x = v;
+          else p.y = v;
           persist();
         });
       });
@@ -121,7 +136,8 @@ export function renderPointsCard(c: AutoclickerConfig, { persist, paintPositionR
           const act = btn.dataset.act;
           if (act === 'del') c.points.splice(i, 1);
           else if (act === 'up' && i > 0) c.points.splice(i - 1, 0, c.points.splice(i, 1)[0]!);
-          else if (act === 'down' && i < c.points.length - 1) c.points.splice(i + 1, 0, c.points.splice(i, 1)[0]!);
+          else if (act === 'down' && i < c.points.length - 1)
+            c.points.splice(i + 1, 0, c.points.splice(i, 1)[0]!);
           else return;
           renderPoints();
           persist();
@@ -156,7 +172,7 @@ export function renderPointsCard(c: AutoclickerConfig, { persist, paintPositionR
     renderPoints();
     persist();
   });
-  byId<HTMLInputElement>('acUseSequence').addEventListener('change', (e) => {
+  byId<HTMLInputElement>('acUseSequence').addEventListener('change', e => {
     if ((e.target as HTMLInputElement).checked) usePoints();
     else {
       c.positionMode = c.basePositionMode;
@@ -165,31 +181,39 @@ export function renderPointsCard(c: AutoclickerConfig, { persist, paintPositionR
     persist();
   });
 
-  const pickModeButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('#acPickMode .seg-btn'));
-  pickModeButtons.forEach(btn => btn.addEventListener('click', () => {
-    c.pickMulti = btn.dataset.val === 'multi';
-    pickModeButtons.forEach(b => b.classList.toggle('selected', b === btn));
-    persist();
-  }));
+  const pickModeButtons = Array.from(
+    document.querySelectorAll<HTMLButtonElement>('#acPickMode .seg-btn'),
+  );
+  pickModeButtons.forEach(btn =>
+    btn.addEventListener('click', () => {
+      c.pickMulti = btn.dataset.val === 'multi';
+      pickModeButtons.forEach(b => b.classList.toggle('selected', b === btn));
+      persist();
+    }),
+  );
 
-  byId('acPointPick').appendChild(makePickButtons(t('ac.point'), async () => {
-    await hideClickOverlay();
-    await openScreenPicker({
-      mode: 'point',
-      showZoom: true,
-      multi: c.pickMulti,
-      infoText: c.pickMulti ? t('ac.pickPointsInfo') : t('ac.pickPointInfo'),
-      onPoint: (imgX, imgY, res) => {
-        addPoint({
-          x: Math.round(imgX + (res.display_x || 0)),
-          y: Math.round(imgY + (res.display_y || 0)),
-        });
-      },
-      onDone: () => { void refreshOverlay(); },
-    });
-  }));
+  byId('acPointPick').appendChild(
+    makePickButtons(t('ac.point'), async () => {
+      await hideClickOverlay();
+      await openScreenPicker({
+        mode: 'point',
+        showZoom: true,
+        multi: c.pickMulti,
+        infoText: c.pickMulti ? t('ac.pickPointsInfo') : t('ac.pickPointInfo'),
+        onPoint: (imgX, imgY, res) => {
+          addPoint({
+            x: Math.round(imgX + (res.display_x || 0)),
+            y: Math.round(imgY + (res.display_y || 0)),
+          });
+        },
+        onDone: () => {
+          void refreshOverlay();
+        },
+      });
+    }),
+  );
 
-  bindCheck('acSequenceLoop', v => c.sequenceLoop = v, persist);
-  bindCheck('acSequenceRandom', v => c.sequenceRandom = v, persist);
-  bindNumber('acClicksPerPoint', v => c.clicksPerPoint = Math.max(1, Math.round(v)), persist);
+  bindCheck('acSequenceLoop', v => (c.sequenceLoop = v), persist);
+  bindCheck('acSequenceRandom', v => (c.sequenceRandom = v), persist);
+  bindNumber('acClicksPerPoint', v => (c.clicksPerPoint = Math.max(1, Math.round(v))), persist);
 }

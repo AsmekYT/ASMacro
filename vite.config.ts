@@ -1,16 +1,15 @@
-import { defineConfig } from "vite";
+import { defineConfig } from 'vite';
 
 // @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
 
 export default defineConfig(async () => ({
-
   clearScreen: false,
   build: {
     rollupOptions: {
       input: {
-        main: "index.html",
-        overlay: "overlay.html",
+        main: 'index.html',
+        overlay: 'overlay.html',
       },
     },
   },
@@ -20,14 +19,14 @@ export default defineConfig(async () => ({
     host: host || false,
     hmr: host
       ? {
-          protocol: "ws",
+          protocol: 'ws',
           host,
           port: 1421,
           overlay: false,
         }
       : { overlay: false },
     watch: {
-      ignored: ["**/src-tauri/**"],
+      ignored: ['**/src-tauri/**'],
     },
   },
 }));

@@ -1,13 +1,34 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as Blockly from 'blockly';
-import { dehydrateAssets, rehydrateAssets, normalizeVarConfig, normalizeVariables, workspaceToDoc, migrateVarFieldBlocks, validateMacroDoc, LocalStore, type MacroDoc } from '../src/storage';
+import {
+  dehydrateAssets,
+  rehydrateAssets,
+  normalizeVarConfig,
+  normalizeVariables,
+  workspaceToDoc,
+  migrateVarFieldBlocks,
+  validateMacroDoc,
+  LocalStore,
+  type MacroDoc,
+} from '../src/storage';
 
 const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSU';
 
 describe('assets', () => {
   it('dehydrate and rehydrate', () => {
-    const imageBlock = () => ({ type: 'logic_image_found', data: JSON.stringify({ image_data: PNG, tolerance: 30 }) });
-    const tree = { blocks: { blocks: [imageBlock(), imageBlock(), { type: 'action_delay', data: JSON.stringify({ ms: 500 }) }] } };
+    const imageBlock = () => ({
+      type: 'logic_image_found',
+      data: JSON.stringify({ image_data: PNG, tolerance: 30 }),
+    });
+    const tree = {
+      blocks: {
+        blocks: [
+          imageBlock(),
+          imageBlock(),
+          { type: 'action_delay', data: JSON.stringify({ ms: 500 }) },
+        ],
+      },
+    };
     const assets: Record<string, string> = {};
 
     dehydrateAssets(tree, assets);
@@ -24,11 +45,26 @@ describe('assets', () => {
 
 describe('normalizeVarConfig', () => {
   it.each([
-    [{ type: 'number', initial: 5 }, { type: 'number', initial: 5 }],
-    [{ type: 'string' }, { type: 'string', initial: '' }],
-    [{ type: 'number', initial: 1, min: NaN, max: 'ten' }, { type: 'number', initial: 1 }],
     [
-      { type: 'number', initial: 1, min: 0, max: 10, isConst: true, desc: 'hi', pinned: true, junk: 'x' },
+      { type: 'number', initial: 5 },
+      { type: 'number', initial: 5 },
+    ],
+    [{ type: 'string' }, { type: 'string', initial: '' }],
+    [
+      { type: 'number', initial: 1, min: NaN, max: 'ten' },
+      { type: 'number', initial: 1 },
+    ],
+    [
+      {
+        type: 'number',
+        initial: 1,
+        min: 0,
+        max: 10,
+        isConst: true,
+        desc: 'hi',
+        pinned: true,
+        junk: 'x',
+      },
       { type: 'number', initial: 1, min: 0, max: 10, isConst: true, desc: 'hi', pinned: true },
     ],
     [{ type: 'function', initial: 1 }, null],
@@ -39,7 +75,9 @@ describe('normalizeVarConfig', () => {
   });
 
   it('normalizeVariables drops bad entries', () => {
-    expect(normalizeVariables({ a: { type: 'number', initial: 1 }, b: { type: 'bogus' }, c: 'x' })).toEqual({ a: { type: 'number', initial: 1 } });
+    expect(
+      normalizeVariables({ a: { type: 'number', initial: 1 }, b: { type: 'bogus' }, c: 'x' }),
+    ).toEqual({ a: { type: 'number', initial: 1 } });
     expect(normalizeVariables(null)).toEqual({});
   });
 });
@@ -50,7 +88,13 @@ describe('migrateVarFieldBlocks', () => {
     const tree = {
       blocks: {
         blocks: [
-          { type: 'list_append', inputs: { ITEM: { block: { type: 'math_number', fields: { NUM: 1 } } }, LIST: getVar('varA') } },
+          {
+            type: 'list_append',
+            inputs: {
+              ITEM: { block: { type: 'math_number', fields: { NUM: 1 } } },
+              LIST: getVar('varA'),
+            },
+          },
           { type: 'object_set', inputs: { OBJ: getVar('varB') } },
         ],
       },
@@ -68,7 +112,10 @@ describe('migrateVarFieldBlocks', () => {
       blocks: {
         blocks: [
           { type: 'list_clear', fields: { VAR: { id: 'varC' } } },
-          { type: 'action_delay', inputs: { MS: { block: { type: 'math_number', fields: { NUM: 500 } } } } },
+          {
+            type: 'action_delay',
+            inputs: { MS: { block: { type: 'math_number', fields: { NUM: 500 } } } },
+          },
         ],
       },
     };
@@ -80,9 +127,18 @@ describe('migrateVarFieldBlocks', () => {
 
 describe('validateMacroDoc', () => {
   it('accepts valid docs', () => {
-    const doc = { name: 'My Macro', blocks: { blocks: [] }, variables: { a: { type: 'number', initial: 1 } }, assets: { h1: PNG } };
+    const doc = {
+      name: 'My Macro',
+      blocks: { blocks: [] },
+      variables: { a: { type: 'number', initial: 1 } },
+      assets: { h1: PNG },
+    };
     expect(validateMacroDoc(doc)).toEqual(doc);
-    expect(validateMacroDoc({ xml: '<xml></xml>' })).toEqual({ xml: '<xml></xml>', variables: {}, assets: {} });
+    expect(validateMacroDoc({ xml: '<xml></xml>' })).toEqual({
+      xml: '<xml></xml>',
+      variables: {},
+      assets: {},
+    });
   });
 
   it.each([
@@ -94,19 +150,33 @@ describe('validateMacroDoc', () => {
     ['array blocks', { blocks: [1, 2] }],
     ['non-data-url asset', { blocks: {}, assets: { h1: 'not a data url' } }],
     ['html asset', { blocks: {}, assets: { h1: 'data:text/html;base64,PHNjcmlwdD4=' } }],
-    ['huge asset', { blocks: {}, assets: { h1: 'data:image/png;base64,' + 'A'.repeat(6_000_000) } }],
+    [
+      'huge asset',
+      { blocks: {}, assets: { h1: 'data:image/png;base64,' + 'A'.repeat(6_000_000) } },
+    ],
   ])('rejects %s', (_, input) => {
     expect(validateMacroDoc(input)).toBeNull();
   });
 
   it('drops unknown keys', () => {
-    expect(validateMacroDoc({ blocks: {}, evil: { action_run_program: 'calc.exe' } })).toEqual({ blocks: {}, variables: {}, assets: {} });
+    expect(validateMacroDoc({ blocks: {}, evil: { action_run_program: 'calc.exe' } })).toEqual({
+      blocks: {},
+      variables: {},
+      assets: {},
+    });
   });
 });
 
 it('workspaceToDoc copies variables', () => {
   vi.spyOn(Blockly.serialization.workspaces, 'save').mockReturnValue({});
-  const base: MacroDoc = { id: 'm1', name: 'Macro', version: 1, variables: { a: { type: 'number', initial: 0 } }, assets: {}, updatedAt: 0 };
+  const base: MacroDoc = {
+    id: 'm1',
+    name: 'Macro',
+    version: 1,
+    variables: { a: { type: 'number', initial: 0 } },
+    assets: {},
+    updatedAt: 0,
+  };
   const doc = workspaceToDoc({} as Blockly.Workspace, base);
   doc.variables.a = { type: 'string', initial: 'mutated' };
   expect(base.variables.a).toEqual({ type: 'number', initial: 0 });
@@ -117,10 +187,20 @@ describe('LocalStore', () => {
   const V1 = 'asmacro_macros_v1';
   const V2 = 'asmacro_macros_v2';
   const CORRUPT = 'asmacro_macros_v3_corrupt';
-  const doc = (id: string): MacroDoc => ({ id, name: id, version: 1, variables: { a: { type: 'number', initial: 7 } }, assets: {}, updatedAt: 1 });
+  const doc = (id: string): MacroDoc => ({
+    id,
+    name: id,
+    version: 1,
+    variables: { a: { type: 'number', initial: 7 } },
+    assets: {},
+    updatedAt: 1,
+  });
   const ids = async () => (await new LocalStore().list()).map(d => d.id);
 
-  beforeEach(() => { localStorage.clear(); vi.restoreAllMocks(); });
+  beforeEach(() => {
+    localStorage.clear();
+    vi.restoreAllMocks();
+  });
 
   it('migrates legacy keys', async () => {
     localStorage.setItem(V1, JSON.stringify([doc('m1'), doc('m2')]));
@@ -157,7 +237,11 @@ describe('LocalStore', () => {
   it('keeps corrupt data if backup fails', async () => {
     localStorage.setItem(KEY, 'not-gzip');
     const setItem = Storage.prototype.setItem;
-    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(function (this: Storage, k: string, v: string) {
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(function (
+      this: Storage,
+      k: string,
+      v: string,
+    ) {
       if (k === CORRUPT) throw new Error('quota');
       setItem.call(this, k, v);
     });

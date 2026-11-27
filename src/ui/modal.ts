@@ -3,8 +3,11 @@ import { t } from '../i18n';
 let openCount = 0;
 
 function focusableEls(root: HTMLElement): HTMLElement[] {
-  return Array.from(root.querySelectorAll<HTMLElement>('button, input, select, textarea, [tabindex]:not([tabindex="-1"])'))
-    .filter(el => !el.hasAttribute('disabled'));
+  return Array.from(
+    root.querySelectorAll<HTMLElement>(
+      'button, input, select, textarea, [tabindex]:not([tabindex="-1"])',
+    ),
+  ).filter(el => !el.hasAttribute('disabled'));
 }
 
 function buildOverlay(): { overlay: HTMLDivElement; card: HTMLDivElement } {
@@ -23,17 +26,38 @@ function closeModal(overlay: HTMLDivElement, previouslyFocused: Element | null) 
   if (previouslyFocused instanceof HTMLElement) previouslyFocused.focus();
 }
 
-function wireKeyTrap(overlay: HTMLDivElement, card: HTMLDivElement, onCancel: () => void, onEnter: () => void) {
-  overlay.addEventListener('mousedown', (e) => { if (e.target === overlay) onCancel(); });
-  overlay.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') { e.preventDefault(); onCancel(); return; }
-    if (e.key === 'Enter' && (e.target as HTMLElement)?.tagName !== 'TEXTAREA') { e.preventDefault(); onEnter(); return; }
+function wireKeyTrap(
+  overlay: HTMLDivElement,
+  card: HTMLDivElement,
+  onCancel: () => void,
+  onEnter: () => void,
+) {
+  overlay.addEventListener('mousedown', e => {
+    if (e.target === overlay) onCancel();
+  });
+  overlay.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      onCancel();
+      return;
+    }
+    if (e.key === 'Enter' && (e.target as HTMLElement)?.tagName !== 'TEXTAREA') {
+      e.preventDefault();
+      onEnter();
+      return;
+    }
     if (e.key === 'Tab') {
       const els = focusableEls(card);
       if (els.length === 0) return;
-      const first = els[0]!, last = els[els.length - 1]!;
-      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      const first = els[0]!,
+        last = els[els.length - 1]!;
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
     }
   });
 }
@@ -49,7 +73,7 @@ export type PromptOpts = {
 };
 
 export function promptDialog(opts: PromptOpts): Promise<string | null> {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     const previouslyFocused = document.activeElement;
     const { overlay, card } = buildOverlay();
     openCount++;
@@ -70,12 +94,19 @@ export function promptDialog(opts: PromptOpts): Promise<string | null> {
     const okBtn = card.querySelector<HTMLButtonElement>('#appModalOk')!;
     const cancelBtn = card.querySelector<HTMLButtonElement>('#appModalCancel')!;
 
-    const finish = (result: string | null) => { closeModal(overlay, previouslyFocused); resolve(result); };
+    const finish = (result: string | null) => {
+      closeModal(overlay, previouslyFocused);
+      resolve(result);
+    };
     const doCancel = () => finish(null);
     const doConfirm = () => {
       const v = input.value;
       const err = opts.validate?.(v);
-      if (err) { errorEl.textContent = err; input.focus(); return; }
+      if (err) {
+        errorEl.textContent = err;
+        input.focus();
+        return;
+      }
       finish(v);
     };
 
@@ -97,7 +128,7 @@ export type ConfirmOpts = {
 };
 
 export function confirmDialog(opts: ConfirmOpts): Promise<boolean> {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     const previouslyFocused = document.activeElement;
     const { overlay, card } = buildOverlay();
     openCount++;
@@ -114,7 +145,10 @@ export function confirmDialog(opts: ConfirmOpts): Promise<boolean> {
     const okBtn = card.querySelector<HTMLButtonElement>('#appModalOk')!;
     const cancelBtn = card.querySelector<HTMLButtonElement>('#appModalCancel')!;
 
-    const finish = (result: boolean) => { closeModal(overlay, previouslyFocused); resolve(result); };
+    const finish = (result: boolean) => {
+      closeModal(overlay, previouslyFocused);
+      resolve(result);
+    };
     const doCancel = () => finish(false);
     const doConfirm = () => finish(true);
 
