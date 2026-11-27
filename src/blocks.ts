@@ -10,8 +10,16 @@ export function legacyCombo(data: any): string {
 
 const clickTypeOptions: [string, string][] = [["field.click.single", "SINGLE"], ["field.click.double", "DOUBLE"]];
 
-const caseSensitiveField: FieldSchema = { name: 'case_sensitive', label: 'field.caseSensitiveSel', type: 'select', options: [['field.no', 'NO'], ['field.yes', 'YES']], default: 'YES' };
-const searchModeField: FieldSchema = { name: 'search_mode', label: 'field.searchMode', type: 'select', options: [['field.searchMode.text', 'TEXT'], ['field.searchMode.regex', 'REGEX']], default: 'TEXT', tooltip: 'field.searchMode.tip' };
+const caseSensitiveField: FieldSchema = {
+  name: 'case_sensitive', label: 'field.caseSensitiveSel', type: 'select',
+  options: [['field.no', 'NO'], ['field.yes', 'YES']], default: 'YES'
+};
+
+const searchModeField: FieldSchema = {
+  name: 'search_mode', label: 'field.searchMode', type: 'select',
+  options: [['field.searchMode.text', 'TEXT'], ['field.searchMode.regex', 'REGEX']],
+  default: 'TEXT', tooltip: 'field.searchMode.tip'
+};
 
 export const blockSchemas: Record<string, FieldSchema[]> = {
   'action_mouse_move': [{ name: 'duration', label: 'field.durationMs', type: 'number', default: 0 }],
@@ -224,19 +232,29 @@ export function buildToolbox() {
     contents: [
       { kind: 'category', name: t('toolbox.variables'), custom: 'VARIABLE', colour: '#e91e8c' },
       { kind: 'category', name: t('toolbox.logic'), colour: '#c9a227', contents: [
-        { kind: 'block', type: 'logic_compare' }, { kind: 'block', type: 'logic_operation' }, { kind: 'block', type: 'logic_negate' }, { kind: 'block', type: 'logic_boolean' }, { kind: 'block', type: 'logic_random_chance' },
+        { kind: 'block', type: 'logic_compare' },
+        { kind: 'block', type: 'logic_operation' },
+        { kind: 'block', type: 'logic_negate' },
+        { kind: 'block', type: 'logic_boolean' },
+        { kind: 'block', type: 'logic_random_chance' },
         { kind: 'block', type: 'logic_wait_until_timeout', inputs: { TIMEOUT: { shadow: { type: 'math_number', fields: { NUM: 5000 } } } } }
       ]},
       { kind: 'category', name: t('toolbox.vision'), colour: '#00b8d4', contents: [
-        { kind: 'block', type: 'logic_image_found' }, { kind: 'block', type: 'logic_color_found' },
-        { kind: 'block', type: 'logic_text_found' }, { kind: 'block', type: 'sensor_screen_text' },
+        { kind: 'block', type: 'logic_image_found' },
+        { kind: 'block', type: 'logic_color_found' },
+        { kind: 'block', type: 'logic_text_found' },
+        { kind: 'block', type: 'sensor_screen_text' },
         { kind: 'block', type: 'logic_pixel_changed', inputs: { X: { shadow: { type: 'math_number', fields: { NUM: 0 } } }, Y: { shadow: { type: 'math_number', fields: { NUM: 0 } } } } },
         { kind: 'block', type: 'logic_region_motion' },
         { kind: 'block', type: 'sensor_region_change' },
-        { kind: 'block', type: 'sensor_found_x' }, { kind: 'block', type: 'sensor_found_y' }, { kind: 'block', type: 'sensor_match_confidence' }
+        { kind: 'block', type: 'sensor_found_x' },
+        { kind: 'block', type: 'sensor_found_y' },
+        { kind: 'block', type: 'sensor_match_confidence' }
       ]},
       { kind: 'category', name: t('toolbox.math'), colour: '#16a085', contents: [
-        { kind: 'block', type: 'math_number' }, { kind: 'block', type: 'math_arithmetic' }, { kind: 'block', type: 'math_random_custom' }
+        { kind: 'block', type: 'math_number' },
+        { kind: 'block', type: 'math_arithmetic' },
+        { kind: 'block', type: 'math_random_custom' }
       ]},
       { kind: 'category', name: t('toolbox.text'), colour: '#4a90d9', contents: [
         { kind: 'block', type: 'str_join', inputs: { A: { shadow: { type: 'text', fields: { TEXT: '' } } }, B: { shadow: { type: 'text', fields: { TEXT: '' } } } } },
@@ -246,7 +264,11 @@ export function buildToolbox() {
         { kind: 'block', type: 'str_index_of', inputs: { SEARCH: { shadow: { type: 'text', fields: { TEXT: '' } } }, TEXT: { shadow: { type: 'text', fields: { TEXT: '' } } } } },
         { kind: 'block', type: 'str_replace', inputs: { FIND: { shadow: { type: 'text', fields: { TEXT: '' } } }, REPLACE: { shadow: { type: 'text', fields: { TEXT: '' } } }, TEXT: { shadow: { type: 'text', fields: { TEXT: '' } } } } },
         { kind: 'block', type: 'str_case', inputs: { TEXT: { shadow: { type: 'text', fields: { TEXT: '' } } } } },
-        { kind: 'block', type: 'str_regex_match', inputs: { PATTERN: { shadow: { type: 'text', fields: { TEXT: '' } } }, TEXT: { shadow: { type: 'text', fields: { TEXT: '' } } }, GROUP: { shadow: { type: 'math_number', fields: { NUM: 0 } } } } },
+        { kind: 'block', type: 'str_regex_match', inputs: {
+          PATTERN: { shadow: { type: 'text', fields: { TEXT: '' } } },
+          TEXT: { shadow: { type: 'text', fields: { TEXT: '' } } },
+          GROUP: { shadow: { type: 'math_number', fields: { NUM: 0 } } }
+        } },
         { kind: 'block', type: 'str_split', inputs: { TEXT: { shadow: { type: 'text', fields: { TEXT: '' } } }, SEP: { shadow: { type: 'text', fields: { TEXT: ',' } } } } },
         { kind: 'block', type: 'str_to_number', inputs: { TEXT: { shadow: { type: 'text', fields: { TEXT: '0' } } } } },
         { kind: 'block', type: 'str_from_value' }
@@ -269,19 +291,44 @@ export function buildToolbox() {
         { kind: 'block', type: 'object_size' }
       ]},
       { kind: 'category', name: t('toolbox.loops'), colour: '#8e44ad', contents: [
-        { kind: 'block', type: 'macro_loop_forever' }, { kind: 'block', type: 'controls_repeat_ext', inputs: { TIMES: { shadow: { type: 'math_number', fields: { NUM: 10 } } } } }, { kind: 'block', type: 'controls_whileUntil' }, { kind: 'block', type: 'controls_forEach' }, { kind: 'block', type: 'controls_flow_statements' }
+        { kind: 'block', type: 'macro_loop_forever' },
+        { kind: 'block', type: 'controls_repeat_ext', inputs: { TIMES: { shadow: { type: 'math_number', fields: { NUM: 10 } } } } },
+        { kind: 'block', type: 'controls_whileUntil' },
+        { kind: 'block', type: 'controls_forEach' },
+        { kind: 'block', type: 'controls_flow_statements' }
       ]},
       { kind: 'category', name: t('toolbox.mouse'), colour: '#2f80ed', contents: [
-        { kind: 'block', type: 'action_mouse_move', inputs: { X: { shadow: { type: 'math_number', fields: { NUM: 0 } } }, Y: { shadow: { type: 'math_number', fields: { NUM: 0 } } } }}, { kind: 'block', type: 'action_mouse_move_rel', inputs: { X: { shadow: { type: 'math_number', fields: { NUM: 0 } } }, Y: { shadow: { type: 'math_number', fields: { NUM: 0 } } } }}, { kind: 'block', type: 'action_mouse_move_found', inputs: { OFFSET_X: { shadow: { type: 'math_number', fields: { NUM: 0 } } }, OFFSET_Y: { shadow: { type: 'math_number', fields: { NUM: 0 } } } }}, { kind: 'block', type: 'action_click_found', inputs: { OFFSET_X: { shadow: { type: 'math_number', fields: { NUM: 0 } } }, OFFSET_Y: { shadow: { type: 'math_number', fields: { NUM: 0 } } } }}, { kind: 'block', type: 'action_mouse_click' }, { kind: 'block', type: 'action_mouse_down' }, { kind: 'block', type: 'action_mouse_up' }, { kind: 'block', type: 'action_mouse_scroll' }
+        { kind: 'block', type: 'action_mouse_move', inputs: { X: { shadow: { type: 'math_number', fields: { NUM: 0 } } }, Y: { shadow: { type: 'math_number', fields: { NUM: 0 } } } }},
+        { kind: 'block', type: 'action_mouse_move_rel', inputs: { X: { shadow: { type: 'math_number', fields: { NUM: 0 } } }, Y: { shadow: { type: 'math_number', fields: { NUM: 0 } } } }},
+        { kind: 'block', type: 'action_mouse_move_found', inputs: { OFFSET_X: { shadow: { type: 'math_number', fields: { NUM: 0 } } }, OFFSET_Y: { shadow: { type: 'math_number', fields: { NUM: 0 } } } }},
+        { kind: 'block', type: 'action_click_found', inputs: { OFFSET_X: { shadow: { type: 'math_number', fields: { NUM: 0 } } }, OFFSET_Y: { shadow: { type: 'math_number', fields: { NUM: 0 } } } }},
+        { kind: 'block', type: 'action_mouse_click' },
+        { kind: 'block', type: 'action_mouse_down' },
+        { kind: 'block', type: 'action_mouse_up' },
+        { kind: 'block', type: 'action_mouse_scroll' }
       ]},
       { kind: 'category', name: t('toolbox.keyboard'), colour: '#27ae60', contents: [
-        { kind: 'block', type: 'action_keyboard_type', inputs: { TEXT: { shadow: { type: 'text', fields: { TEXT: '' } } } } }, { kind: 'block', type: 'action_keyboard_press' }, { kind: 'block', type: 'action_keyboard_down' }, { kind: 'block', type: 'action_keyboard_up' }, { kind: 'block', type: 'action_keyboard_hotkey' }
+        { kind: 'block', type: 'action_keyboard_type', inputs: { TEXT: { shadow: { type: 'text', fields: { TEXT: '' } } } } },
+        { kind: 'block', type: 'action_keyboard_press' },
+        { kind: 'block', type: 'action_keyboard_down' },
+        { kind: 'block', type: 'action_keyboard_up' },
+        { kind: 'block', type: 'action_keyboard_hotkey' }
       ]},
       { kind: 'category', name: t('toolbox.control'), colour: '#e74c3c', contents: [
-        { kind: 'block', type: 'action_delay', inputs: { MS: { shadow: { type: 'math_number', fields: { NUM: 1000 } } } }}, { kind: 'block', type: 'action_wait_for_color', inputs: { X: { shadow: { type: 'math_number', fields: { NUM: 0 } } }, Y: { shadow: { type: 'math_number', fields: { NUM: 0 } } } }}, { kind: 'block', type: 'action_wait_for_pixel_change', inputs: { X: { shadow: { type: 'math_number', fields: { NUM: 0 } } }, Y: { shadow: { type: 'math_number', fields: { NUM: 0 } } } }}, { kind: 'block', type: 'control_wait_until' }, { kind: 'block', type: 'control_if' }
+        { kind: 'block', type: 'action_delay', inputs: { MS: { shadow: { type: 'math_number', fields: { NUM: 1000 } } } }},
+        { kind: 'block', type: 'action_wait_for_color', inputs: { X: { shadow: { type: 'math_number', fields: { NUM: 0 } } }, Y: { shadow: { type: 'math_number', fields: { NUM: 0 } } } }},
+        { kind: 'block', type: 'action_wait_for_pixel_change', inputs: { X: { shadow: { type: 'math_number', fields: { NUM: 0 } } }, Y: { shadow: { type: 'math_number', fields: { NUM: 0 } } } }},
+        { kind: 'block', type: 'control_wait_until' },
+        { kind: 'block', type: 'control_if' }
       ]},
       { kind: 'category', name: t('toolbox.system'), colour: '#e67e22', contents: [
-        { kind: 'block', type: 'sensor_mouse_x' }, { kind: 'block', type: 'sensor_mouse_y' }, { kind: 'block', type: 'sensor_screen_width' }, { kind: 'block', type: 'sensor_screen_height' }, { kind: 'block', type: 'action_run_program', inputs: { PATH: { shadow: { type: 'text', fields: { TEXT: '' } } } } }, { kind: 'block', type: 'action_switch_window', inputs: { TITLE: { shadow: { type: 'text', fields: { TEXT: '' } } } } }, { kind: 'block', type: 'action_log' }
+        { kind: 'block', type: 'sensor_mouse_x' },
+        { kind: 'block', type: 'sensor_mouse_y' },
+        { kind: 'block', type: 'sensor_screen_width' },
+        { kind: 'block', type: 'sensor_screen_height' },
+        { kind: 'block', type: 'action_run_program', inputs: { PATH: { shadow: { type: 'text', fields: { TEXT: '' } } } } },
+        { kind: 'block', type: 'action_switch_window', inputs: { TITLE: { shadow: { type: 'text', fields: { TEXT: '' } } } } },
+        { kind: 'block', type: 'action_log' }
       ]}
     ],
   };

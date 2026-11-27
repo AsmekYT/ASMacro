@@ -79,13 +79,14 @@ export const collectionEvaluators: Record<string, Evaluator> = {
     str_contains: async (block, workspace, data) => {
       const text = String((await evaluateNode(block.getInputTargetBlock('TEXT'), workspace)) ?? '');
       const search = String((await evaluateNode(block.getInputTargetBlock('SEARCH'), workspace)) ?? '');
+      const caseSensitive = data?.case_sensitive !== 'NO';
       if (data?.search_mode === 'REGEX') {
-        const re = compileRegex(search, data?.case_sensitive !== 'NO', false);
+        const re = compileRegex(search, caseSensitive, false);
         return re ? re.test(text) : false;
       }
-      return data?.case_sensitive === 'NO'
-        ? text.toLowerCase().includes(search.toLowerCase())
-        : text.includes(search);
+      return caseSensitive
+        ? text.includes(search)
+        : text.toLowerCase().includes(search.toLowerCase());
     },
     str_substring: async (block, workspace) => {
       const t = String((await evaluateNode(block.getInputTargetBlock('TEXT'), workspace)) ?? '');
@@ -102,16 +103,15 @@ export const collectionEvaluators: Record<string, Evaluator> = {
       const find = String((await evaluateNode(block.getInputTargetBlock('FIND'), workspace)) ?? '');
       const replace = String((await evaluateNode(block.getInputTargetBlock('REPLACE'), workspace)) ?? '');
       const text = String((await evaluateNode(block.getInputTargetBlock('TEXT'), workspace)) ?? '');
+      const caseSensitive = data?.case_sensitive !== 'NO';
       if (data?.search_mode === 'REGEX') {
-        const re = compileRegex(find, data?.case_sensitive !== 'NO', true);
+        const re = compileRegex(find, caseSensitive, true);
         return re ? text.replace(re, replace) : text;
       }
       if (!find) return text;
-      if (data?.case_sensitive === 'NO') {
-        const re = compileRegex(escapeRegex(find), false, true);
-        return re ? text.replace(re, replace) : text;
-      }
-      return text.split(find).join(replace);
+      if (caseSensitive) return text.split(find).join(replace);
+      const re = compileRegex(escapeRegex(find), false, true);
+      return re ? text.replace(re, replace) : text;
     },
     str_case: async (block, workspace) => {
       const t = String((await evaluateNode(block.getInputTargetBlock('TEXT'), workspace)) ?? '');
