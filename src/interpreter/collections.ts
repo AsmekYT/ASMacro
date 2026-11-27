@@ -1,6 +1,20 @@
 import type * as Blockly from 'blockly';
 import { vars } from '../variables';
 import { evaluateNode, type Evaluator } from './index';
+import { toast } from '../ui/toast';
+import { t } from '../i18n';
+
+const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const compileRegex = (pattern: string, caseSensitive: boolean, global: boolean): RegExp | null => {
+  if (!pattern) return null;
+  try {
+    return new RegExp(pattern, `${global ? 'g' : ''}${caseSensitive ? '' : 'i'}`);
+  } catch (e) {
+    toast(t('toast.badRegex', { error: String(e) }), 'error');
+    return null;
+  }
+};
 
 const isPlainObject = (v: unknown): v is Record<string, unknown> =>
     !!v && typeof v === 'object' && !Array.isArray(v);
@@ -62,10 +76,16 @@ export const collectionEvaluators: Record<string, Evaluator> = {
       const t = await evaluateNode(block.getInputTargetBlock('TEXT'), workspace);
       return String(t ?? '').length;
     },
-    str_contains: async (block, workspace) => {
-      const t = await evaluateNode(block.getInputTargetBlock('TEXT'), workspace);
-      const s = await evaluateNode(block.getInputTargetBlock('SEARCH'), workspace);
-      return String(t ?? '').includes(String(s ?? ''));
+    str_contains: async (block, workspace, data) => {
+      const text = String((await evaluateNode(block.getInputTargetBlock('TEXT'), workspace)) ?? '');
+      const search = String((await evaluateNode(block.getInputTargetBlock('SEARCH'), workspace)) ?? '');
+      if (data?.search_mode === 'REGEX') {
+        const re = compileRegex(search, data?.case_sensitive !== 'NO', false);
+        return re ? re.test(text) : false;
+      }
+      return data?.case_sensitive === 'NO'
+        ? text.toLowerCase().includes(search.toLowerCase())
+        : text.includes(search);
     },
     str_substring: async (block, workspace) => {
       const t = String((await evaluateNode(block.getInputTargetBlock('TEXT'), workspace)) ?? '');
@@ -78,11 +98,20 @@ export const collectionEvaluators: Record<string, Evaluator> = {
       const t = String((await evaluateNode(block.getInputTargetBlock('TEXT'), workspace)) ?? '');
       return t.indexOf(s) + 1;
     },
-    str_replace: async (block, workspace) => {
+    str_replace: async (block, workspace, data) => {
       const find = String((await evaluateNode(block.getInputTargetBlock('FIND'), workspace)) ?? '');
       const replace = String((await evaluateNode(block.getInputTargetBlock('REPLACE'), workspace)) ?? '');
-      const t = String((await evaluateNode(block.getInputTargetBlock('TEXT'), workspace)) ?? '');
-      return find ? t.split(find).join(replace) : t;
+      const text = String((await evaluateNode(block.getInputTargetBlock('TEXT'), workspace)) ?? '');
+      if (data?.search_mode === 'REGEX') {
+        const re = compileRegex(find, data?.case_sensitive !== 'NO', true);
+        return re ? text.replace(re, replace) : text;
+      }
+      if (!find) return text;
+      if (data?.case_sensitive === 'NO') {
+        const re = compileRegex(escapeRegex(find), false, true);
+        return re ? text.replace(re, replace) : text;
+      }
+      return text.split(find).join(replace);
     },
     str_case: async (block, workspace) => {
       const t = String((await evaluateNode(block.getInputTargetBlock('TEXT'), workspace)) ?? '');
@@ -90,6 +119,14 @@ export const collectionEvaluators: Record<string, Evaluator> = {
       if (mode === 'UPPER') return t.toUpperCase();
       if (mode === 'LOWER') return t.toLowerCase();
       return t.trim();
+    },
+    str_regex_match: async (block, workspace, data) => {
+      const pattern = String((await evaluateNode(block.getInputTargetBlock('PATTERN'), workspace)) ?? '');
+      const t0 = String((await evaluateNode(block.getInputTargetBlock('TEXT'), workspace)) ?? '');
+      const group = Math.max(0, Math.round(Number(await evaluateNode(block.getInputTargetBlock('GROUP'), workspace)) || 0));
+      const re = compileRegex(pattern, data?.case_sensitive === 'YES', false);
+      const m = re ? re.exec(t0) : null;
+      return m ? (m[group] ?? '') : '';
     },
     str_split: async (block, workspace) => {
       const t = String((await evaluateNode(block.getInputTargetBlock('TEXT'), workspace)) ?? '');

@@ -10,6 +10,9 @@ export function legacyCombo(data: any): string {
 
 const clickTypeOptions: [string, string][] = [["field.click.single", "SINGLE"], ["field.click.double", "DOUBLE"]];
 
+const caseSensitiveField: FieldSchema = { name: 'case_sensitive', label: 'field.caseSensitiveSel', type: 'select', options: [['field.no', 'NO'], ['field.yes', 'YES']], default: 'YES' };
+const searchModeField: FieldSchema = { name: 'search_mode', label: 'field.searchMode', type: 'select', options: [['field.searchMode.text', 'TEXT'], ['field.searchMode.regex', 'REGEX']], default: 'TEXT', tooltip: 'field.searchMode.tip' };
+
 export const blockSchemas: Record<string, FieldSchema[]> = {
   'action_mouse_move': [{ name: 'duration', label: 'field.durationMs', type: 'number', default: 0 }],
   'action_mouse_move_rel': [{ name: 'duration', label: 'field.durationMs', type: 'number', default: 0 }],
@@ -90,7 +93,10 @@ export const blockSchemas: Record<string, FieldSchema[]> = {
     { name: 'button', label: 'field.button', type: 'mouse_btn', default: 'LEFT' },
     { name: 'click_type', label: 'field.clickType', type: 'select', options: clickTypeOptions, default: 'SINGLE' },
     { name: 'duration', label: 'field.moveDurationMs', type: 'number', default: 0 }
-  ]
+  ],
+  'str_contains': [searchModeField, caseSensitiveField],
+  'str_replace': [searchModeField, caseSensitiveField],
+  'str_regex_match': [{ ...caseSensitiveField, default: 'NO' }]
 };
 
 const BASE_CUSTOM_BLOCKS = [
@@ -156,6 +162,7 @@ const BASE_CUSTOM_BLOCKS = [
   { "type": "str_index_of", "args0": [{ "type": "input_value", "name": "SEARCH" }, { "type": "input_value", "name": "TEXT" }], "inputsInline": true, "output": "Number", "style": "text_blocks" },
   { "type": "str_replace", "args0": [{ "type": "input_value", "name": "FIND" }, { "type": "input_value", "name": "REPLACE" }, { "type": "input_value", "name": "TEXT" }], "inputsInline": true, "output": "String", "style": "text_blocks" },
   { "type": "str_case", "args0": [{ "type": "input_value", "name": "TEXT" }, { "type": "field_dropdown", "name": "CASE", "options": [["field.case.upper", "UPPER"], ["field.case.lower", "LOWER"], ["field.case.trim", "TRIM"]] }], "inputsInline": true, "output": "String", "style": "text_blocks" },
+  { "type": "str_regex_match", "args0": [{ "type": "input_value", "name": "PATTERN", "check": "String" }, { "type": "input_value", "name": "TEXT" }, { "type": "input_value", "name": "GROUP", "check": "Number" }], "inputsInline": true, "output": "String", "style": "text_blocks" },
   { "type": "str_split", "args0": [{ "type": "input_value", "name": "TEXT" }, { "type": "input_value", "name": "SEP", "check": "String" }], "inputsInline": true, "output": null, "style": "text_blocks" },
   { "type": "str_to_number", "args0": [{ "type": "input_value", "name": "TEXT" }], "output": "Number", "style": "text_blocks" },
   { "type": "str_from_value", "args0": [{ "type": "input_value", "name": "VALUE" }], "output": "String", "style": "text_blocks" }
@@ -239,6 +246,7 @@ export function buildToolbox() {
         { kind: 'block', type: 'str_index_of', inputs: { SEARCH: { shadow: { type: 'text', fields: { TEXT: '' } } }, TEXT: { shadow: { type: 'text', fields: { TEXT: '' } } } } },
         { kind: 'block', type: 'str_replace', inputs: { FIND: { shadow: { type: 'text', fields: { TEXT: '' } } }, REPLACE: { shadow: { type: 'text', fields: { TEXT: '' } } }, TEXT: { shadow: { type: 'text', fields: { TEXT: '' } } } } },
         { kind: 'block', type: 'str_case', inputs: { TEXT: { shadow: { type: 'text', fields: { TEXT: '' } } } } },
+        { kind: 'block', type: 'str_regex_match', inputs: { PATTERN: { shadow: { type: 'text', fields: { TEXT: '' } } }, TEXT: { shadow: { type: 'text', fields: { TEXT: '' } } }, GROUP: { shadow: { type: 'math_number', fields: { NUM: 0 } } } } },
         { kind: 'block', type: 'str_split', inputs: { TEXT: { shadow: { type: 'text', fields: { TEXT: '' } } }, SEP: { shadow: { type: 'text', fields: { TEXT: ',' } } } } },
         { kind: 'block', type: 'str_to_number', inputs: { TEXT: { shadow: { type: 'text', fields: { TEXT: '0' } } } } },
         { kind: 'block', type: 'str_from_value' }
