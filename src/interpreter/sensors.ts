@@ -1,4 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
+import { readText } from '@tauri-apps/plugin-clipboard-manager';
 import { getMousePos as readMousePos } from '../platformInfo';
 import { evaluateNode, interpreterState, type Evaluator } from './index';
 
@@ -219,6 +220,14 @@ export const sensorEvaluators: Record<string, Evaluator> = {
   sensor_screen_height: async () => {
     const size = await invoke<[number, number]>('get_screen_size');
     return size[1];
+  },
+  sensor_clipboard: async () => {
+    try {
+      return (await readText()) ?? '';
+    } catch (e) {
+      console.error('clipboard read failed:', e);
+      return '';
+    }
   },
   sensor_found_x: async () => interpreterState.globalFoundX,
   sensor_found_y: async () => interpreterState.globalFoundY,

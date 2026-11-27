@@ -55,6 +55,74 @@ function deleteSelected(workspace: Blockly.WorkspaceSvg) {
   selectedIds.clear();
 }
 
+type BlockState = Record<string, any>;
+
+let clipboard: BlockState[] = [];
+
+function hasSelectedAncestor(block: Blockly.Block, ids: Set<string>): boolean {
+  for (let p = block.getParent(); p; p = p.getParent()) if (ids.has(p.id)) return true;
+  return false;
+}
+
+function stripIds(state: BlockState) {
+  delete state.id;
+  if (state.next?.block) stripIds(state.next.block);
+  for (const input of Object.values(state.inputs ?? {}) as BlockState[]) {
+    if (input.block) stripIds(input.block);
+    if (input.shadow) stripIds(input.shadow);
+  }
+}
+
+function pruneUnselectedNext(state: BlockState, ids: Set<string>) {
+  const next = state.next?.block;
+  if (!next) return;
+  if (!ids.has(next.id)) delete state.next;
+  else pruneUnselectedNext(next, ids);
+}
+
+export function copyBlocksState(workspace: Blockly.Workspace, ids: Set<string>): BlockState[] {
+  const states: BlockState[] = [];
+  for (const id of ids) {
+    const block = workspace.getBlockById(id);
+    if (!block || block.isShadow() || hasSelectedAncestor(block, ids)) continue;
+    const state = Blockly.serialization.blocks.save(block, {
+      addCoordinates: true,
+      addNextBlocks: true,
+    }) as BlockState | null;
+    if (!state) continue;
+    pruneUnselectedNext(state, ids);
+    states.push(state);
+  }
+  return states;
+}
+
+export function pasteBlocksState(
+  workspace: Blockly.Workspace,
+  states: BlockState[],
+  offset = 20,
+): Blockly.Block[] {
+  const pasted: Blockly.Block[] = [];
+  const prev = Blockly.Events.getGroup();
+  Blockly.Events.setGroup(true);
+  try {
+    for (const state of states) {
+      const copy = JSON.parse(JSON.stringify(state)) as BlockState;
+      stripIds(copy);
+      copy.x = (copy.x ?? 0) + offset;
+      copy.y = (copy.y ?? 0) + offset;
+      pasted.push(
+        Blockly.serialization.blocks.append(
+          copy as unknown as Blockly.serialization.blocks.State,
+          workspace,
+        ),
+      );
+    }
+  } finally {
+    Blockly.Events.setGroup(prev || false);
+  }
+  return pasted;
+}
+
 function blockFromEventTarget(
   workspace: Blockly.WorkspaceSvg,
   target: EventTarget | null,
@@ -187,6 +255,34 @@ export function initMultiselect(workspace: Blockly.WorkspaceSvg, injectionDiv: H
     (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement | null)?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+
+      const ctrl = e.ctrlKey || e.metaKey;
+      if (ctrl && !e.altKey && ['c', 'x', 'v'].includes(e.key.toLowerCase())) {
+        const key = e.key.toLowerCase();
+        const sel = Blockly.common.getSelected();
+        const ids = new Set(selectedIds);
+        if (!ids.size && sel instanceof Blockly.BlockSvg && sel.workspace === workspace) {
+          if (!sel.isShadow()) ids.add(sel.id);
+        }
+        if (key === 'v') {
+          if (!clipboard.length) return;
+          e.preventDefault();
+          e.stopPropagation();
+          clearSelection(workspace);
+          for (const b of pasteBlocksState(workspace, clipboard))
+            addToSelection(b as Blockly.BlockSvg);
+          return;
+        }
+        if (!ids.size) return;
+        e.preventDefault();
+        e.stopPropagation();
+        clipboard = copyBlocksState(workspace, ids);
+        if (key === 'x') {
+          if (selectedIds.size) deleteSelected(workspace);
+          else disposeGroup(workspace, ids, true);
+        }
+        return;
+      }
 
       if (e.key === 'Escape' && selectedIds.size > 0) {
         clearSelection(workspace);

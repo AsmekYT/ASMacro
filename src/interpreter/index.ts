@@ -1,5 +1,6 @@
 import * as Blockly from 'blockly';
 import { invoke } from '@tauri-apps/api/core';
+import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { settings, blockDelay } from '../settings';
 import { vars } from '../variables';
 import { toast, reportError } from '../ui/toast';
@@ -345,6 +346,14 @@ export async function executeBlocks(
         if (!switched) toast(t('toast.windowNotFound'), 'info');
       } catch (e) {
         toast(String(e), 'error');
+      }
+      await interruptibleSleep(blockDelay());
+    } else if (type === 'action_clipboard_set') {
+      const value = await evaluateNode(currentBlock.getInputTargetBlock('TEXT'), workspace);
+      try {
+        await writeText(toText(value));
+      } catch (e) {
+        reportActionError(e, 'action_clipboard_set');
       }
       await interruptibleSleep(blockDelay());
     } else if (type === 'action_log') {

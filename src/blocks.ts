@@ -481,6 +481,15 @@ const BASE_CUSTOM_BLOCKS = [
   { type: 'sensor_match_confidence', output: 'Number', style: 'system_blocks' },
   { type: 'sensor_region_change', output: 'Number', style: 'system_blocks' },
   { type: 'sensor_screen_text', output: 'String', style: 'system_blocks' },
+  { type: 'sensor_clipboard', output: 'String', style: 'system_blocks' },
+  {
+    type: 'action_clipboard_set',
+    args0: [{ type: 'input_value', name: 'TEXT' }],
+    inputsInline: true,
+    previousStatement: null,
+    nextStatement: null,
+    style: 'system_blocks',
+  },
   {
     type: 'action_run_program',
     args0: [{ type: 'input_value', name: 'PATH' }],
@@ -1128,6 +1137,12 @@ export function buildToolbox() {
             inputs: { TITLE: { shadow: { type: 'text', fields: { TEXT: '' } } } },
           },
           { kind: 'block', type: 'action_log' },
+          { kind: 'block', type: 'sensor_clipboard' },
+          {
+            kind: 'block',
+            type: 'action_clipboard_set',
+            inputs: { TEXT: { shadow: { type: 'text', fields: { TEXT: '' } } } },
+          },
         ],
       },
     ],

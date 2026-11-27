@@ -129,6 +129,7 @@ fn main() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_clipboard_manager::init())
         .setup(|app| {
             let argv: Vec<String> = std::env::args().collect();
             app.manage(PendingOpen(Mutex::new(first_macro_arg(&argv))));

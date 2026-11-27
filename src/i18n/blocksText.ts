@@ -48,6 +48,8 @@ export const BLOCK_TEXT: Record<string, BlockTextEntry> = {
     tooltip: 'block.action_switch_window.tip',
   },
   action_log: { message0: 'block.action_log' },
+  sensor_clipboard: { message0: 'block.sensor_clipboard', tooltip: 'block.sensor_clipboard.tip' },
+  action_clipboard_set: { message0: 'block.action_clipboard_set' },
   list_length: { message0: 'block.list_length' },
   list_get: { message0: 'block.list_get', tooltip: 'block.oneBasedIndex' },
   list_set: { message0: 'block.list_set', tooltip: 'block.oneBasedIndex' },
